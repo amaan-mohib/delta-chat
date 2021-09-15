@@ -10,6 +10,8 @@
     doc,
     writeBatch,
     updateDoc,
+    getDoc,
+    serverTimestamp,
   } from "firebase/firestore";
   import { db } from "../../utils/firebase";
   import { selectedRoom, user } from "../../utils/store";
@@ -21,8 +23,10 @@
   };
   const close = () => {
     isOpen = false;
+    error = "";
   };
 
+  let error = "";
   // const rooms = [
   //   {
   //     name: "first",
@@ -53,31 +57,89 @@
 
   const createRoom = async () => {
     try {
+      const batch = writeBatch(db);
       const docRef = doc(collection(db, "rooms"));
-      await setDoc(docRef, {
+      batch.set(docRef, {
         id: docRef.id,
         name: roomName,
         img: roomImg,
         participants: arrayUnion($user.uid),
       });
       console.log("added", docRef.id);
-      try {
-        const userRef = doc(db, "users", $user.uid);
-        await updateDoc(userRef, {
-          rooms: arrayUnion(docRef.id),
+
+      const userRef = doc(db, "users", $user.uid);
+      batch.update(userRef, {
+        rooms: arrayUnion(docRef.id),
+      });
+      channels.forEach((channel) => {
+        const channelRef = doc(collection(db, `${docRef.path}/channels`));
+        batch.set(channelRef, {
+          id: channelRef.id,
+          ...channel,
         });
-      } catch (e) {
-        console.error(e);
-      }
+        if (channel.type === "text") {
+          batch.update(doc(db, "rooms", docRef.id), {
+            general: channelRef.id,
+          });
+        }
+      });
+      await batch.commit();
+      close();
+      isNext = false;
+      isCreateRoom = false;
+      roomName = "";
+      roomImg = "";
+      roomID = "";
+    } catch (e) {
+      console.error(e);
+      error = "Oops! Something went wrong 🤕";
+    }
+  };
+
+  const join = async () => {
+    const snap = await getDoc(doc(db, "rooms", roomID));
+    if (snap.exists()) {
       try {
         const batch = writeBatch(db);
-        channels.forEach((channel) => {
-          const channelRef = doc(collection(db, `${docRef.path}/channels`));
-          batch.set(channelRef, {
-            id: channelRef.id,
-            ...channel,
-          });
+        const docRef = doc(db, "rooms", roomID);
+        batch.update(docRef, {
+          participants: arrayUnion($user.uid),
         });
+        const userRef = doc(db, "users", $user.uid);
+        batch.update(userRef, {
+          rooms: arrayUnion(roomID),
+        });
+
+        const roomSnap = await getDoc(docRef);
+        if (roomSnap.exists()) {
+          socket.emit(
+            "sendMessage",
+            {
+              user: { displayName: "admin" },
+              text: `${$user.displayName} just joined in`,
+              room: roomID,
+              channel: roomSnap.data().general,
+              sentAt: new Date().toLocaleDateString("en-IN"),
+            },
+            async () => {
+              //storing in db
+              const msgRef = doc(
+                collection(
+                  db,
+                  `rooms/${roomID}/channels/${roomSnap.data().general}/messages`
+                )
+              );
+              await setDoc(msgRef, {
+                sender: { displayName: "admin" },
+                text: `${$user.displayName} just joined in`,
+                room: roomID,
+                channel: roomSnap.data().general,
+                id: msgRef.id,
+                sentAt: serverTimestamp(),
+              });
+            }
+          );
+        }
         await batch.commit();
         close();
         isNext = false;
@@ -87,34 +149,10 @@
         roomID = "";
       } catch (e) {
         console.error(e);
+        error = "Oops! Something went wrong 🤕";
       }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const join = async () => {
-    try {
-      const docRef = doc(db, "rooms", roomID);
-      await updateDoc(docRef, {
-        participants: arrayUnion($user.uid),
-      });
-      try {
-        const userRef = doc(db, "users", $user.uid);
-        await updateDoc(userRef, {
-          rooms: arrayUnion(roomID),
-        });
-      } catch (e) {
-        console.error(e);
-      }
-      close();
-      isNext = false;
-      isCreateRoom = false;
-      roomName = "";
-      roomImg = "";
-      roomID = "";
-    } catch (e) {
-      console.error(e);
+    } else {
+      error = "The Room you are looking for does not exists 🙁";
     }
   };
 </script>
@@ -166,6 +204,9 @@
       <div class="room-dialog">
         {#if !isNext}
           <h2>Create a Room</h2>
+          <p class="size14" style="margin-bottom: 20px;">
+            Or a join a Room, if you have the ID already
+          </p>
           <button
             on:click={() => {
               isCreateRoom = true;
@@ -179,17 +220,22 @@
             }}>Join</button
           >
         {:else if isCreateRoom}
+          <h2>Create a Room</h2>
           <input
             bind:value={roomImg}
             type="text"
             placeholder="Room Image Link"
           />
           <input bind:value={roomName} type="text" placeholder="Room Name" />
+          {#if error}
+            <p class="size14">{error}</p>
+          {/if}
           <div class="btn-bar">
             <button
               on:click={() => {
                 isCreateRoom = false;
                 isNext = false;
+                error = "";
               }}>Back</button
             >
             <button disabled={roomName.trim() === ""} on:click={createRoom}
@@ -197,12 +243,17 @@
             >
           </div>
         {:else}
+          <h2>Join a Room</h2>
           <input bind:value={roomID} type="text" placeholder="Room ID" />
+          {#if error}
+            <p class="size14">{error}</p>
+          {/if}
           <div class="btn-bar">
             <button
               on:click={() => {
                 isCreateRoom = false;
                 isNext = false;
+                error = "";
               }}>Back</button
             >
             <button disabled={roomID.trim() === ""} on:click={join}>Join</button

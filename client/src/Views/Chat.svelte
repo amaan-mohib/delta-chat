@@ -108,7 +108,7 @@
             <div
               class="message {message.sender.uid === $user.uid
                 ? 'right-align'
-                : ''}"
+                : ''} {message.sender.displayName === 'admin' ? 'admin' : ''}"
             >
               {#if message.sender.uid !== $user.uid}
                 <img
@@ -145,8 +145,9 @@
       </div>
     </div>
   {/if}
-
-  <Activity />
+  {#if $selectedRoom.id !== "me"}
+    <Activity />
+  {/if}
 </div>
 
 <style>
@@ -162,7 +163,10 @@
   header {
     position: fixed;
     top: 0;
-    width: 100%;
+    width: calc(100% - 72px - 240px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     height: 40px;
     padding: 10px;
     border-bottom: 1px solid hsl(0, 0%, 15%);
@@ -201,7 +205,8 @@
     padding: 3px 10px;
     background-color: hsl(0, 0%, 15%);
     border: 1px solid hsl(0, 0%, 15%);
-    border-radius: 5px;
+    border-radius: 10px;
+    border-bottom-left-radius: 5px;
     margin: 2px 0;
   }
   .right-align {
@@ -209,6 +214,8 @@
   }
   .right-align .message-text {
     background-color: hsl(0, 0%, 20%);
+    border-radius: 10px;
+    border-bottom-right-radius: 5px;
   }
   .right-align .message-sentat {
     text-align: right;
@@ -223,5 +230,16 @@
   .sender-name {
     font-size: 12px;
     color: hsl(0, 0%, 70%);
+  }
+  .admin {
+    align-self: center;
+    text-align: center;
+  }
+  .admin .message-text {
+    border-radius: 10px !important;
+  }
+  .admin .pfp,
+  .admin .sender-name {
+    display: none;
   }
 </style>

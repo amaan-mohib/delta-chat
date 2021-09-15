@@ -46,6 +46,11 @@ button {
   transition-duration: 0.4s;
   line-height: 16px;
 }
+.btn-small {
+  font-size: 14px;
+  padding: 3px 8px;
+  min-height: 25px;
+}
 button:active {
   background-color: hsl(0, 0%, 5%);
 }
@@ -101,6 +106,14 @@ input[type="text"]:hover {
   width: 30px;
   height: 30px;
   border-radius: 50%;
+}
+.offlineIcon {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: hsl(0, 0%, 50%);
+  box-shadow: 0 0 0 3px hsl(0, 0%, 60%);
+  transform: translate(-50%, -50%);
 }
 /* a {
 	color: rgb(0,100,200);

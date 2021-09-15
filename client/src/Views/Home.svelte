@@ -1,7 +1,14 @@
 <script>
+  import { selectedChannel } from "../utils/store";
+
   import Chat from "./Chat.svelte";
+  import Friends from "./Friends.svelte";
   import Navbar from "./Navbar/Navbar.svelte";
 </script>
 
 <Navbar />
-<Chat />
+{#if $selectedChannel.id === "friends"}
+  <Friends />
+{:else}
+  <Chat />
+{/if}

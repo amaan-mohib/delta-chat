@@ -26,34 +26,54 @@
   function changeChannel() {
     if ($user && $selectedRoom.id) {
       // console.log($selectedRoom);
-      const q = query(collection(db, `rooms/${$selectedRoom.id}/channels`));
-      unsub = onSnapshot(q, (querySnapshot) => {
-        let allChannels = querySnapshot.docs.map((doc) => doc.data());
-        channels = allChannels.filter((room) => room.type === "text");
-        vcs = allChannels.filter((channel) => !channels.includes(channel));
-        // console.log(channels, vcs);
-        if (channelID === "friends") {
-          if (channels.length > 0) $selectedChannel = channels[0];
-        } else {
-          let filteredRoom = channels.filter((room) => room.id === channelID);
-          $selectedChannel =
-            filteredRoom.length > 0 ? filteredRoom[0] : channels[0];
-        }
-        // console.log(channels, $selectedChannel);
-        if (channels.length > 0) {
-          window.history.replaceState(
-            {},
-            `${$selectedChannel.name}`,
-            `/${$selectedRoom.id}/${$selectedChannel.id}`
-          );
-        }
-      });
+      if ($selectedRoom.id === "me") {
+        channels = [
+          {
+            id: "friends",
+            name: "Friends",
+            typeIcon: "👥",
+          },
+        ];
+        $selectedChannel = channels[0];
+        window.history.replaceState(
+          {},
+          `${$selectedChannel.name}`,
+          `/me/friends`
+        );
+      } else {
+        const q = query(collection(db, `rooms/${$selectedRoom.id}/channels`));
+        unsub = onSnapshot(q, (querySnapshot) => {
+          let allChannels = querySnapshot.docs.map((doc) => doc.data());
+          channels = allChannels.filter((room) => room.type === "text");
+          vcs = allChannels.filter((channel) => !channels.includes(channel));
+          // console.log(channels, vcs);
+          if (channelID === "friends") {
+            if (channels.length > 0) $selectedChannel = channels[0];
+          } else {
+            let filteredRoom = channels.filter((room) => room.id === channelID);
+            $selectedChannel =
+              filteredRoom.length > 0 ? filteredRoom[0] : channels[0];
+          }
+          // console.log(channels, $selectedChannel);
+          if (channels.length > 0) {
+            window.history.replaceState(
+              {},
+              `${$selectedChannel.name}`,
+              `/${$selectedRoom.id}/${$selectedChannel.id}`
+            );
+          }
+        });
+      }
     }
   }
 
   onDestroy(() => {
     unsub && unsub();
-    $selectedChannel = { name: "Loading", typeIcon: "" };
+    $selectedChannel = {
+      id: "friends",
+      name: "Friends",
+      typeIcon: "👥",
+    };
   });
 
   const changeURLChannel = (channel) => {
