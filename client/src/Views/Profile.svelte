@@ -1,7 +1,17 @@
 <script>
+  import { DialogContent, DialogOverlay } from "svelte-accessible-dialog";
   import { XIcon } from "svelte-feather-icons";
   import { navigate } from "svelte-navigator";
+  import { logout } from "../utils/firebase";
   import { user } from "../utils/store";
+
+  let isOpen = false;
+  const open = () => {
+    isOpen = true;
+  };
+  const close = () => {
+    isOpen = false;
+  };
 </script>
 
 <button
@@ -16,13 +26,33 @@
 <div class="profile">
   <h1>Account</h1>
   <div class="card">
-    <div style="background-color: {$user.banner || '#000'};" class="banner" />
     <div class="card-head">
       <div class="flex">
         <img src={$user.photoURL} alt="pfp" class="pfp" />
         <h3>{$user.displayName}</h3>
       </div>
-      <button>Edit</button>
+      <div class="flex2">
+        <button style="margin-bottom: 10px;" on:click={open}>Edit</button>
+        <DialogOverlay {isOpen} onDismiss={close}>
+          <DialogContent aria-label="Edit Profile" class="dialog">
+            <button
+              on:click={close}
+              class="icon-button x-icon"
+              style="align-self: flex-end;"
+            >
+              <XIcon />
+            </button>
+            <div class="content">
+              <h2>Edit Profile</h2>
+              <input type="text" placeholder="Name" />
+              <input type="text" placeholder="Image" />
+              <button>Cancel</button>
+              <button>Confirm</button>
+            </div>
+          </DialogContent>
+        </DialogOverlay>
+        <button class="btn-outline" on:click={logout}>Log Out</button>
+      </div>
     </div>
     <div class="card2">
       <div class="info">
@@ -57,7 +87,6 @@
     background-color: hsl(0, 0%, 10%);
   }
   .card {
-    padding-top: 110px;
     overflow: hidden;
   }
   .card2 {
@@ -87,13 +116,13 @@
     height: 90px;
     margin-right: 15px;
   }
-  .banner {
+  /* .banner {
     position: absolute;
     top: 0;
     right: 0;
     width: 100%;
     height: 100px;
-  }
+  } */
   .close {
     position: fixed;
     top: 20px;
@@ -101,5 +130,11 @@
   }
   .size14 {
     color: hsl(0, 0%, 70%);
+  }
+  .flex2 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
   }
 </style>

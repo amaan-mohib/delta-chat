@@ -1,7 +1,7 @@
 <script>
   import { onDestroy, onMount } from "svelte";
   import { collection, query, where, onSnapshot } from "firebase/firestore";
-  import { db, logout } from "../utils/firebase";
+  import { db } from "../utils/firebase";
   import socket from "../utils/socket";
   import { selectedRoom, onlineUsers } from "../utils/store";
 
@@ -43,8 +43,6 @@
 </script>
 
 <div class="side-bar">
-  <!-- Activity
-  <button on:click={logout}>Log Out</button> -->
   {#if online.length > 0}
     <div class="members">
       <p>Online — {online.length}</p>

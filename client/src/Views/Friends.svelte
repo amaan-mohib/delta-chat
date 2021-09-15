@@ -1,5 +1,6 @@
 <script>
   import {
+    arrayUnion,
     collection,
     doc,
     getDoc,
@@ -7,6 +8,7 @@
     onSnapshot,
     query,
     setDoc,
+    where,
     writeBatch,
   } from "@firebase/firestore";
 
@@ -16,6 +18,8 @@
   import { DialogOverlay, DialogContent } from "svelte-accessible-dialog";
   import { onlineUsers, selectedChannel, user } from "../utils/store";
   import { XIcon } from "svelte-feather-icons";
+  import NoFriends from "../assets/images/undraw_friends.svg";
+  import NoRequests from "../assets/images/undraw_void.svg";
 
   let isOpen = false;
   const open = () => {
@@ -37,7 +41,12 @@
 
   const getFriends = async () => {
     try {
-      const snap = await getDocs(collection(db, "users", $user.uid, "friends"));
+      const snap = await getDocs(
+        query(
+          collection(db, "users"),
+          where("friends", "array-contains", $user.uid)
+        )
+      );
       friends = snap.docs.map((doc) => doc.data());
       online = friends.filter((user) => $onlineUsers.includes(user.uid));
       offline = friends.filter((user) => !$onlineUsers.includes(user.uid));
@@ -56,45 +65,42 @@
       console.error(e);
     }
   };
+  /*AKA sendReq*/
   const addFriend = async (uid) => {
     if (uid === $user.uid) {
       error = "Hey! that's you 😁";
     } else {
-      try {
-        const snap = await getDoc(doc(db, "users", uid));
-        if (snap.exists()) {
-          await setDoc(doc(db, "users", uid, "requests", $user.uid), {
-            uid: $user.uid,
-            displayName: $user.displayName,
-            photoURL: $user.photoURL,
-            email: $user.email,
-          });
-
-          getFriends();
-          close();
-        } else {
-          error = "The user you are looking for does not exists 🙁";
+      if (friends.includes(uid)) {
+        error = "Wait a minute, the user is already your friend! 🤨";
+      } else {
+        try {
+          const snap = await getDoc(doc(db, "users", uid));
+          if (snap.exists()) {
+            await setDoc(doc(db, "users", uid, "requests", $user.uid), {
+              uid: $user.uid,
+              displayName: $user.displayName,
+              photoURL: $user.photoURL,
+              email: $user.email,
+            });
+            close();
+          } else {
+            error = "The user you are looking for does not exists 🙁";
+          }
+        } catch (e) {
+          console.error(e);
+          error = "Oops! Something went wrong 🤕";
         }
-      } catch (e) {
-        console.error(e);
-        error = "Oops! Something went wrong 🤕";
       }
     }
   };
   const accept = async (friend) => {
     const batch = writeBatch(db);
     try {
-      batch.set(doc(db, "users", $user.uid, "friends", friend.uid), {
-        uid: friend.uid,
-        displayName: friend.displayName,
-        photoURL: friend.photoURL,
-        email: friend.email,
+      batch.update(doc(db, "users", $user.uid), {
+        friends: arrayUnion(friend.uid),
       });
-      batch.set(doc(db, "users", friend.uid, "friends", $user.uid), {
-        uid: $user.uid,
-        displayName: $user.displayName,
-        photoURL: $user.photoURL,
-        email: $user.email,
+      batch.update(doc(db, "users", friend.uid), {
+        friends: arrayUnion($user.uid),
       });
       batch.delete(doc(db, "users", $user.uid, "requests", friend.uid));
       await batch.commit();
@@ -102,6 +108,30 @@
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const changeURL = async (person) => {
+    const participants = [person.uid, $user.uid].sort();
+    const pair = participants.join("_");
+    const snap = await getDoc(doc(db, "dms", pair));
+    if (!snap.exists()) {
+      await setDoc(doc(db, "dms", pair), {
+        id: pair,
+        participants: participants,
+        category: "direct messages",
+      });
+    }
+    $selectedChannel = {
+      id: pair,
+      participants: participants,
+      name: participants.filter((p) => p !== $user.uid)[0],
+      typeIcon: "@",
+    };
+    window.history.replaceState(
+      {},
+      `${$selectedChannel.name}`,
+      `/me/${$selectedChannel.id}`
+    );
   };
   onMount(() => {
     getFriends();
@@ -174,10 +204,10 @@
         <p class="title">Online — {online.length}</p>
         <div class="friends">
           {#each online as u}
-            <div class="friend">
+            <div title="Click to copy ID" class="friend" on:click={() => {}}>
               <div class="img">
                 <img class="pfp" src={u.photoURL} alt={u.displayName} />
-                <div class="onlineIcon" />
+                <!-- <div class="onlineIcon" /> -->
               </div>
               <p class="size14">{u.displayName}</p>
             </div>
@@ -191,7 +221,7 @@
             <div class="friend offline">
               <div class="img">
                 <img class="pfp" src={u.photoURL} alt={u.displayName} />
-                <div class="offlineIcon" />
+                <!-- <div class="offlineIcon" /> -->
               </div>
               <p class="size14">{u.displayName}</p>
             </div>
@@ -199,7 +229,10 @@
         </div>
       {/if}
     {:else}
-      <div>No friends...</div>
+      <div class="empty">
+        <img src={NoFriends} alt="no friends" class="illustration" />
+        <div>No friends yet. Hope you got a cat 😊</div>
+      </div>
     {/if}
   {/if}
   {#if tabIndex === 1}
@@ -211,15 +244,20 @@
             <div class="friend">
               <img class="pfp" src={u.photoURL} alt={u.displayName} />
               <p class="size14">{u.displayName}</p>
-              <button style="margin-top: 10px;" on:click={() => accept(u)}
-                >Accept</button
+              <button
+                class="btn-small"
+                style="margin-top: 10px;"
+                on:click={() => accept(u)}>Accept</button
               >
             </div>
           {/each}
         </div>
       {/if}
     {:else}
-      <div>No Requests...</div>
+      <div class="empty">
+        <img src={NoRequests} class="illustration" alt="no requests" />
+        <div>You are staring into the void. No Requests for now.</div>
+      </div>
     {/if}
   {/if}
 </div>
@@ -246,12 +284,12 @@
   }
   .friends {
     width: 100%;
-    height: 100%;
     padding-top: 40px;
     display: flex;
     padding: 10px;
     align-items: flex-start;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
   .friend {
     display: flex;
@@ -260,12 +298,13 @@
     align-items: center;
     justify-content: center;
     border-radius: 5px;
+    margin: 10px;
   }
   .friend:hover {
     cursor: pointer;
     background-color: hsl(0, 0%, 20%);
   }
-  .friend > .img {
+  .pfp {
     margin-bottom: 5px;
   }
   .content {
@@ -300,5 +339,16 @@
   }
   .offline {
     filter: brightness(0.5);
+  }
+  .empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .illustration {
+    margin-bottom: 40px;
   }
 </style>

@@ -1,7 +1,7 @@
 <script>
   import Channel from "../../components/Channel.svelte";
   import { selectedChannel, selectedRoom, user } from "../../utils/store";
-  import { collection, query, onSnapshot } from "firebase/firestore";
+  import { collection, query, onSnapshot, where } from "firebase/firestore";
   import { db } from "../../utils/firebase";
   import { onDestroy } from "svelte";
   import { useParams } from "svelte-navigator";
@@ -15,6 +15,7 @@
   // ];
 
   let unsub;
+  let dms;
   let channels = [];
   let vcs = [];
   const params = useParams();
@@ -38,8 +39,40 @@
         window.history.replaceState(
           {},
           `${$selectedChannel.name}`,
-          `/me/friends`
+          `/me/${$selectedChannel.id}`
         );
+        // // if (channelID !== "friends") {
+        // const q = query(
+        //   collection(db, "dms"),
+        //   where("participants", "array-contains", $user.uid)
+        // );
+        // dms = onSnapshot(q, (querySnapshot) => {
+        //   let allDms = querySnapshot.docs.map((doc) => doc.data());
+        //   if (allDms.length > 0) {
+        //     channels.push(...allDms);
+        //     let filteredRoom = channels.filter(
+        //       (dm) => dm.participants === channelID.split("_")
+        //     );
+        //     console.log(channels, filteredRoom);
+        //     $selectedChannel =
+        //       filteredRoom.length > 0 ? filteredRoom[0] : channels[0];
+        //   } else {
+        //     $selectedChannel = channels[0];
+        //   }
+        //   window.history.replaceState(
+        //     {},
+        //     `${$selectedChannel.name}`,
+        //     `/me/${$selectedChannel.id}`
+        //   );
+        // });
+        // } else {
+        //   $selectedChannel = channels[0];
+        //   window.history.replaceState(
+        //     {},
+        //     `${$selectedChannel.name}`,
+        //     `/me/friends`
+        //   );
+        // }
       } else {
         const q = query(collection(db, `rooms/${$selectedRoom.id}/channels`));
         unsub = onSnapshot(q, (querySnapshot) => {
@@ -69,6 +102,7 @@
 
   onDestroy(() => {
     unsub && unsub();
+    dms && dms();
     $selectedChannel = {
       id: "friends",
       name: "Friends",

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "firebase": "^9.0.2",
+    "rollup-plugin-svg": "^2.0.0",
     "sirv-cli": "^1.0.0",
     "socket.io-client": "^4.2.0",
     "svelte-accessible-dialog": "^2.1.3",
