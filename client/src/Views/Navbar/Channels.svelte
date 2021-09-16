@@ -1,6 +1,12 @@
 <script>
   import Channel from "../../components/Channel.svelte";
-  import { selectedChannel, selectedRoom, user } from "../../utils/store";
+  import {
+    isInVC,
+    selectedChannel,
+    selectedRoom,
+    selectedVC,
+    user,
+  } from "../../utils/store";
   import { collection, query, onSnapshot, where } from "firebase/firestore";
   import { db } from "../../utils/firebase";
   import { onDestroy } from "svelte";
@@ -124,13 +130,28 @@
   <h4>{$selectedRoom.name}</h4>
   <hr />
   <div class="channels">
+    <p class="category">Text Channels</p>
     {#each channels as channel (channel.id)}
       <Channel
         id={channel.id}
         name={channel.name}
         type={channel.typeIcon}
         on:click={() => {
+          $isInVC = false;
           changeURLChannel(channel);
+        }}
+      />
+    {/each}
+    <div style="margin-bottom: 10px;" />
+    <p class="category">Voice Channels</p>
+    {#each vcs as channel (channel.id)}
+      <Channel
+        id={channel.id}
+        name={channel.name}
+        type={channel.typeIcon}
+        on:click={() => {
+          $isInVC = true;
+          $selectedVC = { ...channel, room: $selectedRoom };
         }}
       />
     {/each}
@@ -165,5 +186,9 @@
     flex-direction: column;
     padding: 10px;
     /* padding-bottom: 0; */
+  }
+  .category {
+    font-size: 14px;
+    margin: 5px 0;
   }
 </style>

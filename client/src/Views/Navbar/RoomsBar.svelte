@@ -14,7 +14,7 @@
     serverTimestamp,
   } from "firebase/firestore";
   import { db } from "../../utils/firebase";
-  import { selectedRoom, user } from "../../utils/store";
+  import { isInVC, selectedRoom, user } from "../../utils/store";
   import socket from "../../utils/socket";
 
   let isOpen = false;
@@ -164,6 +164,7 @@
     img={"none"}
     icon={HomeIcon}
     on:click={() => {
+      $isInVC = false;
       $selectedRoom = { id: "me", name: "Home" };
     }}
   />
@@ -174,6 +175,7 @@
       img={room.img}
       icon={false}
       on:click={() => {
+        $isInVC = false;
         $selectedRoom = room;
         socket.emit("joinRoom", { room: room.id }, (error) => {
           if (error) console.error(error);

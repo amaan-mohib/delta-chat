@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
 
-  import { db, logout } from "../utils/firebase";
+  import { db } from "../utils/firebase";
   import socket from "../utils/socket";
   import { selectedChannel, user, selectedRoom } from "../utils/store";
   import {

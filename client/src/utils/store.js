@@ -8,3 +8,5 @@ export const selectedChannel = writable({
   name: "Friends",
   typeIcon: "👥",
 });
+export const selectedVC = writable(null);
+export const isInVC = writable(false);
