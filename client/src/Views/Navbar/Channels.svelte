@@ -150,8 +150,17 @@
         name={channel.name}
         type={channel.typeIcon}
         on:click={() => {
-          $isInVC = true;
-          $selectedVC = { ...channel, room: $selectedRoom };
+          let temp = $selectedVC;
+          if (temp && temp.id !== channel.id) {
+            $selectedVC = null;
+            setTimeout(() => {
+              $isInVC = true;
+              $selectedVC = { ...channel, room: $selectedRoom };
+            }, 500);
+          } else {
+            $isInVC = true;
+            $selectedVC = { ...channel, room: $selectedRoom };
+          }
         }}
       />
     {/each}

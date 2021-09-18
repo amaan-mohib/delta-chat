@@ -6,4 +6,8 @@ const socket = io(ENDPOINT, {
   transports: ["websocket", "polling", "flashsocket"],
 });
 
+export const socketVC = io(`${ENDPOINT}/vc`, {
+  transports: ["websocket", "polling", "flashsocket"],
+});
+
 export default socket;
