@@ -18,9 +18,17 @@
     <div class={$selectedVC && $isInVC ? "showVC" : "hideVC"}>
       <VC />
     </div>
-    <div>
-      <p>{$selectedVC.name} / {$selectedVC.room.name}</p>
+    <div
+      class="vc-bar"
+      on:click={() => {
+        $isInVC = true;
+      }}
+    >
+      <p class="location size14">
+        {$selectedVC.name} / {$selectedVC.room.name}
+      </p>
       <button
+        title="Hang Up"
         class="icon-button"
         on:click={() => {
           $selectedVC = null;
@@ -30,6 +38,7 @@
         <PhoneOffIcon />
       </button>
     </div>
+    <hr />
   {/if}
   <div>
     <div>
@@ -52,7 +61,7 @@
     justify-content: space-between;
     width: 100%;
     padding: 10px;
-    background-color: hsl(0, 0%, 15%);
+    background-color: hsl(0, 0%, 10%);
   }
   .profile-bar div {
     display: flex;
@@ -70,5 +79,17 @@
   }
   .showVC {
     display: block !important;
+  }
+  hr {
+    border: none;
+    height: 1px;
+    background-color: rgb(236, 236, 236);
+    margin: 5px 0;
+  }
+  .vc-bar:hover {
+    cursor: pointer;
+  }
+  .location:hover {
+    text-decoration: underline;
   }
 </style>

@@ -1,5 +1,5 @@
 <script>
-  import { selectedChannel } from "../utils/store";
+  import { selectedChannel, usersInVC } from "../utils/store";
 
   export let type;
   export let name;
@@ -10,6 +10,16 @@
   <span class="channel-icon">{type}</span>
   <span>{name}</span>
 </div>
+{#if $usersInVC[id]}
+  {#each $usersInVC[id] as data}
+    <div class="channel vc">
+      <img src={data.user.photoURL} alt={data.user.displayName} class="pfp" />
+      <p>
+        {data.user.displayName}
+      </p>
+    </div>
+  {/each}
+{/if}
 
 <style>
   .channel {
@@ -19,6 +29,13 @@
     padding: 10px;
     border-radius: 5px;
     color: hsl(0, 0%, 70%);
+  }
+  .vc {
+    padding: 5px;
+    margin-left: 20px;
+  }
+  .vc > p {
+    font-size: 12px;
   }
   .channel-icon {
     margin-right: 10px;
@@ -34,5 +51,10 @@
   }
   .active {
     margin-bottom: 1px;
+  }
+  .pfp {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
   }
 </style>

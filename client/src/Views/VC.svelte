@@ -101,9 +101,9 @@
           streamProp = stream;
           streamState = stream;
           socket.emit("joinVC", { channelID: $selectedVC.id, user: $user });
-          socket.on("allUsers", (data) => {
-            $usersInVC = data;
-          });
+          // socket.on("allUsers", (data) => {
+          //   $usersInVC = data;
+          // });
           socket.on("allUsersInVC", (allUsers) => {
             if (allUsers.length > 0) {
               console.log(allUsers);
@@ -230,7 +230,7 @@
     </button>
     <button
       class="icon-button end-call"
-      title="End Call"
+      title="Hang Up"
       on:click={() => {
         $selectedVC = null;
         $isInVC = false;

@@ -71,11 +71,9 @@ iovc.on("connect", (socket) => {
   socket.on("joinVC", ({ channelID, user }) => {
     // console.log(usersVC);
     console.log("someone joined", channelID);
-    if (
-      usersVC[channelID] &&
-      !usersVC[channelID].some((u) => u.user.uid === user.uid)
-    ) {
-      usersVC[channelID].push({ sid: socket.id, user });
+    if (usersVC[channelID]) {
+      if (!usersVC[channelID].some((u) => u.user.uid === user.uid))
+        usersVC[channelID].push({ sid: socket.id, user });
     } else {
       usersVC[channelID] = [{ sid: socket.id, user }];
     }
@@ -85,7 +83,7 @@ iovc.on("connect", (socket) => {
     const allUsers = usersVC[channelID];
     console.log(usersVC);
     socket.emit("allUsersInVC", allUsersXMe);
-    iovc.to(channelID).emit("allUsers", usersVC);
+    io.to("app").emit("usersVC", usersVC);
   });
 
   socket.on("sending signal", (payload) => {
@@ -118,7 +116,7 @@ iovc.on("connect", (socket) => {
       let newRoom = room.filter((id) => id.sid !== socket.id);
       usersVC[socketToVC[socket.id]] = newRoom;
       console.log(usersVC);
-      iovc.to(socketToVC[socket.id]).emit("allUsers", usersVC);
+      io.to("app").emit("usersVC", usersVC);
       socket.broadcast.emit("user left", socket.id);
       socket.leave(socketToVC[socket.id]);
     }

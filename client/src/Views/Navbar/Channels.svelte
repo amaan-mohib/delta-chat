@@ -6,12 +6,14 @@
     selectedRoom,
     selectedVC,
     user,
+    usersInVC,
   } from "../../utils/store";
   import { collection, query, onSnapshot, where } from "firebase/firestore";
   import { db } from "../../utils/firebase";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { useParams } from "svelte-navigator";
   import ProfileBar from "../../components/ProfileBar.svelte";
+  import socket from "../../utils/socket";
 
   // const channels = [
   //   {
@@ -106,6 +108,12 @@
     }
   }
 
+  onMount(() => {
+    socket.on("usersVC", (data) => {
+      $usersInVC = data;
+    });
+  });
+
   onDestroy(() => {
     unsub && unsub();
     dms && dms();
@@ -143,27 +151,36 @@
       />
     {/each}
     <div style="margin-bottom: 10px;" />
-    <p class="category">Voice Channels</p>
-    {#each vcs as channel (channel.id)}
-      <Channel
-        id={channel.id}
-        name={channel.name}
-        type={channel.typeIcon}
-        on:click={() => {
-          let temp = $selectedVC;
-          if (temp && temp.id !== channel.id) {
-            $selectedVC = null;
-            setTimeout(() => {
-              $isInVC = true;
-              $selectedVC = { ...channel, room: $selectedRoom };
-            }, 500);
-          } else {
-            $isInVC = true;
-            $selectedVC = { ...channel, room: $selectedRoom };
-          }
-        }}
-      />
-    {/each}
+    {#if vcs.length > 0}
+      <p class="category">Voice Channels</p>
+      {#each vcs as channel (channel.id)}
+        <Channel
+          id={channel.id}
+          name={channel.name}
+          type={channel.typeIcon}
+          on:click={() => {
+            if (
+              $usersInVC[channel.id] &&
+              $usersInVC[channel.id].some((u) => u.user.uid === $user.uid)
+            ) {
+              console.log("in another client");
+            } else {
+              let temp = $selectedVC;
+              if (temp && temp.id !== channel.id) {
+                $selectedVC = null;
+                setTimeout(() => {
+                  $isInVC = true;
+                  $selectedVC = { ...channel, room: $selectedRoom };
+                }, 500);
+              } else {
+                $isInVC = true;
+                $selectedVC = { ...channel, room: $selectedRoom };
+              }
+            }
+          }}
+        />
+      {/each}
+    {/if}
   </div>
   <ProfileBar />
 </div>

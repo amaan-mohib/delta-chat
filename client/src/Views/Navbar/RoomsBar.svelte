@@ -97,62 +97,68 @@
   };
 
   const join = async () => {
-    const snap = await getDoc(doc(db, "rooms", roomID));
-    if (snap.exists()) {
-      try {
-        const batch = writeBatch(db);
-        const docRef = doc(db, "rooms", roomID);
-        batch.update(docRef, {
-          participants: arrayUnion($user.uid),
-        });
-        const userRef = doc(db, "users", $user.uid);
-        batch.update(userRef, {
-          rooms: arrayUnion(roomID),
-        });
+    if ($user.rooms.includes(roomID)) {
+      error = "WDYM? You are already in the Room 🤔";
+    } else {
+      const snap = await getDoc(doc(db, "rooms", roomID));
+      if (snap.exists()) {
+        try {
+          const batch = writeBatch(db);
+          const docRef = doc(db, "rooms", roomID);
+          batch.update(docRef, {
+            participants: arrayUnion($user.uid),
+          });
+          const userRef = doc(db, "users", $user.uid);
+          batch.update(userRef, {
+            rooms: arrayUnion(roomID),
+          });
 
-        const roomSnap = await getDoc(docRef);
-        if (roomSnap.exists()) {
-          socket.emit(
-            "sendMessage",
-            {
-              user: { displayName: "admin" },
-              text: `${$user.displayName} just joined in`,
-              room: roomID,
-              channel: roomSnap.data().general,
-              sentAt: new Date().toLocaleDateString("en-IN"),
-            },
-            async () => {
-              //storing in db
-              const msgRef = doc(
-                collection(
-                  db,
-                  `rooms/${roomID}/channels/${roomSnap.data().general}/messages`
-                )
-              );
-              await setDoc(msgRef, {
-                sender: { displayName: "admin" },
+          const roomSnap = await getDoc(docRef);
+          if (roomSnap.exists()) {
+            socket.emit(
+              "sendMessage",
+              {
+                user: { displayName: "admin" },
                 text: `${$user.displayName} just joined in`,
                 room: roomID,
                 channel: roomSnap.data().general,
-                id: msgRef.id,
-                sentAt: serverTimestamp(),
-              });
-            }
-          );
+                sentAt: new Date().toLocaleDateString("en-IN"),
+              },
+              async () => {
+                //storing in db
+                const msgRef = doc(
+                  collection(
+                    db,
+                    `rooms/${roomID}/channels/${
+                      roomSnap.data().general
+                    }/messages`
+                  )
+                );
+                await setDoc(msgRef, {
+                  sender: { displayName: "admin" },
+                  text: `${$user.displayName} just joined in`,
+                  room: roomID,
+                  channel: roomSnap.data().general,
+                  id: msgRef.id,
+                  sentAt: serverTimestamp(),
+                });
+              }
+            );
+          }
+          await batch.commit();
+          close();
+          isNext = false;
+          isCreateRoom = false;
+          roomName = "";
+          roomImg = "";
+          roomID = "";
+        } catch (e) {
+          console.error(e);
+          error = "Oops! Something went wrong 🤕";
         }
-        await batch.commit();
-        close();
-        isNext = false;
-        isCreateRoom = false;
-        roomName = "";
-        roomImg = "";
-        roomID = "";
-      } catch (e) {
-        console.error(e);
-        error = "Oops! Something went wrong 🤕";
+      } else {
+        error = "The Room you are looking for does not exists 🙁";
       }
-    } else {
-      error = "The Room you are looking for does not exists 🙁";
     }
   };
 </script>
