@@ -174,7 +174,9 @@
           <MicOffIcon />
         </div>
       {/if}
-
+      <div class="name" aria-disabled="true">
+        {$user.displayName}
+      </div>
       <div
         style="display: {isCam ? 'initial' : 'none'};width: 100%;
       height: 100%;"
@@ -318,6 +320,15 @@
     width: 30px;
     height: 30px;
     padding: 7px !important;
+  }
+  .name {
+    position: absolute;
+    background-color: hsla(0, 0%, 15%, 0.7);
+    bottom: 10px;
+    left: 10px;
+    padding: 7px !important;
+    border-radius: 5px;
+    font-size: 12px;
   }
   .pfp {
     width: 100px;

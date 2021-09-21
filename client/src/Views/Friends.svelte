@@ -338,7 +338,7 @@
     padding: 10px;
   }
   .offline {
-    filter: brightness(0.5);
+    filter: brightness(0.65);
   }
   .empty {
     width: 100%;

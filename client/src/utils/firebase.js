@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+import { getStorage, ref } from "firebase/storage";
 import firebaseConfig from "../config/firebase-config";
 import {
   getAuth,
@@ -38,3 +39,7 @@ export const logout = () => {
 
 //Firestore
 export const db = getFirestore();
+
+//Storage
+const storage = getStorage(app);
+export const storageRef = ref(storage);

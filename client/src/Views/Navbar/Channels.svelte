@@ -193,6 +193,7 @@
     overflow-y: clip;
     padding: 10px;
     width: 240px;
+    height: 40px;
   }
   hr {
     border: none;
@@ -211,7 +212,7 @@
     display: flex;
     flex-direction: column;
     padding: 10px;
-    /* padding-bottom: 0; */
+    overflow-y: auto;
   }
   .category {
     font-size: 14px;

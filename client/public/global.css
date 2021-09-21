@@ -130,6 +130,9 @@ input[type="text"]:hover {
   width: 400px;
   height: auto;
 }
+.grey-text {
+  color: hsl(0, 0%, 70%);
+}
 /* a {
 	color: rgb(0,100,200);
 	text-decoration: none;

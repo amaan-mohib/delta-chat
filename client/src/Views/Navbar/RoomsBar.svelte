@@ -1,7 +1,7 @@
 <script>
   export let rooms;
   import Room from "../../components/Room.svelte";
-  import { PlusIcon, XIcon, HomeIcon } from "svelte-feather-icons";
+  import { PlusIcon, XIcon, HomeIcon, ImageIcon } from "svelte-feather-icons";
   import { DialogOverlay, DialogContent } from "svelte-accessible-dialog";
   import {
     collection,
@@ -13,9 +13,10 @@
     getDoc,
     serverTimestamp,
   } from "firebase/firestore";
-  import { db } from "../../utils/firebase";
+  import { db, storageRef } from "../../utils/firebase";
   import { isInVC, selectedRoom, user } from "../../utils/store";
   import socket from "../../utils/socket";
+  import { getDownloadURL, ref, uploadBytesResumable } from "@firebase/storage";
 
   let isOpen = false;
   const open = () => {
@@ -27,18 +28,13 @@
   };
 
   let error = "";
-  // const rooms = [
-  //   {
-  //     name: "first",
-  //     img: "https://cdn.discordapp.com/avatars/559704479990153217/8ed644c0f450b6dccd2d058a4df79cb6.png?size=256",
-  //   },
-  // ];
-
   let isNext = false;
   let isCreateRoom = false;
   let roomName = "";
   let roomImg = "";
+  let roomImgTemp = null;
   let roomID = "";
+  let isImgLink = false;
 
   const channels = [
     {
@@ -55,10 +51,44 @@
     },
   ];
 
+  const uploadImage = (id) => {
+    return new Promise((resolve, reject) => {
+      if (roomImgTemp) {
+        const typeArr = roomImgTemp.type.split("/");
+        const type = roomImgTemp.type.split("/")[typeArr.length - 1];
+        const uploadTask = uploadBytesResumable(
+          ref(storageRef, "rooms/" + `${id}.${type}`),
+          roomImgTemp
+        );
+        uploadTask.on(
+          "state_changed",
+          (ss) => {
+            const progress = (ss.bytesTransferred / ss.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+          },
+          (error) => {
+            console.error(error);
+            reject(error);
+          },
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+              console.log(url);
+              roomImg = url;
+              resolve();
+            });
+          }
+        );
+      } else {
+        resolve();
+      }
+    });
+  };
+
   const createRoom = async () => {
     try {
       const batch = writeBatch(db);
       const docRef = doc(collection(db, "rooms"));
+      await uploadImage(docRef.id);
       batch.set(docRef, {
         id: docRef.id,
         name: roomName,
@@ -89,7 +119,9 @@
       isCreateRoom = false;
       roomName = "";
       roomImg = "";
+      roomImgTemp = null;
       roomID = "";
+      isImgLink = false;
     } catch (e) {
       console.error(e);
       error = "Oops! Something went wrong 🤕";
@@ -161,6 +193,11 @@
       }
     }
   };
+
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    roomImgTemp = file;
+  };
 </script>
 
 <div class="rooms">
@@ -212,7 +249,7 @@
       <div class="room-dialog">
         {#if !isNext}
           <h2>Create a Room</h2>
-          <p class="size14" style="margin-bottom: 20px;">
+          <p class="size14 grey-text" style="margin-bottom: 20px;">
             Or a join a Room, if you have the ID already
           </p>
           <button
@@ -229,11 +266,52 @@
           >
         {:else if isCreateRoom}
           <h2>Create a Room</h2>
-          <input
-            bind:value={roomImg}
-            type="text"
-            placeholder="Room Image Link"
-          />
+          <p class="size14 grey-text" style="margin-bottom: 20px;">
+            Personalize your Room, with a name and an optional Room Icon
+          </p>
+          {#if isImgLink}
+            <input
+              bind:value={roomImg}
+              type="text"
+              placeholder="Room Image Link"
+            />
+          {:else}
+            <div class="upload-parent">
+              {#if roomImgTemp}
+                <img
+                  src={roomImgTemp ? URL.createObjectURL(roomImgTemp) : ""}
+                  alt="Room icon"
+                  class="roomImg"
+                />
+              {:else}
+                <div class="upload">
+                  <ImageIcon />
+                </div>
+                <div class="add-badge">
+                  <PlusIcon />
+                </div>
+              {/if}
+
+              <input
+                class="input-image"
+                type="file"
+                accept="image/*"
+                name="roomImg"
+                on:change={handleUpload}
+              />
+            </div>
+          {/if}
+          <span
+            class="option grey-text"
+            on:click={() => {
+              isImgLink = !isImgLink;
+              roomImgTemp = null;
+              roomImg = "";
+            }}
+            >{isImgLink
+              ? "Choose an image instead"
+              : "Enter an image link instead"}</span
+          >
           <input bind:value={roomName} type="text" placeholder="Room Name" />
           {#if error}
             <p class="size14">{error}</p>
@@ -244,6 +322,7 @@
                 isCreateRoom = false;
                 isNext = false;
                 error = "";
+                isImgLink = false;
               }}>Back</button
             >
             <button disabled={roomName.trim() === ""} on:click={createRoom}
@@ -252,6 +331,9 @@
           </div>
         {:else}
           <h2>Join a Room</h2>
+          <p class="size14 grey-text" style="margin-bottom: 20px;">
+            Enter a Room ID to join an existing server
+          </p>
           <input bind:value={roomID} type="text" placeholder="Room ID" />
           {#if error}
             <p class="size14">{error}</p>
@@ -282,6 +364,13 @@
     width: 72px;
     padding-top: 5px;
     background-color: hsl(0, 0%, 15%);
+    overflow: hidden auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+  .rooms::-webkit-scrollbar {
+    width: 0;
+    height: 0;
   }
   .room-dialog {
     margin-top: 10px;
@@ -298,5 +387,53 @@
     align-items: center;
     justify-content: space-between;
     margin-top: 10px;
+  }
+  .upload-parent {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 5px auto;
+  }
+  .upload {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px dashed;
+    padding: 23px;
+  }
+  .input-image {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+  .add-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 26px;
+    height: 26px;
+    padding: 3px;
+    border-radius: 50%;
+    background-color: hsl(0, 0%, 15%);
+    box-shadow: 0 0 0 3px hsl(0deg 0% 20%);
+  }
+  .option {
+    font-size: 12px;
+    text-align: center;
+  }
+  .option:hover {
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .roomImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
   }
 </style>
