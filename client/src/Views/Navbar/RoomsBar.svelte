@@ -17,6 +17,7 @@
   import { isInVC, selectedRoom, user } from "../../utils/store";
   import socket from "../../utils/socket";
   import { getDownloadURL, ref, uploadBytesResumable } from "@firebase/storage";
+  import compressImage, { getHeightAndWidth } from "../../utils/compressImage";
 
   let isOpen = false;
   const open = () => {
@@ -35,6 +36,7 @@
   let roomImgTemp = null;
   let roomID = "";
   let isImgLink = false;
+  let preview;
 
   const channels = [
     {
@@ -194,9 +196,30 @@
     }
   };
 
-  const handleUpload = (e) => {
+  const handleUpload = async (e) => {
     const file = e.target.files[0];
-    roomImgTemp = file;
+    preview.src = URL.createObjectURL(file);
+    const { height, width } = await getHeightAndWidth(file);
+    const MAX = 256;
+    const widthRatioBlob = await compressImage(
+      preview,
+      MAX / width,
+      width,
+      height
+    );
+    const heightRatioBlob = await compressImage(
+      preview,
+      MAX / height,
+      width,
+      height
+    );
+    const compressedBlob =
+      widthRatioBlob.size > heightRatioBlob.size
+        ? heightRatioBlob
+        : widthRatioBlob;
+    preview.src = URL.createObjectURL(compressedBlob);
+    roomImgTemp = compressedBlob;
+    URL.revokeObjectURL(preview);
   };
 </script>
 
@@ -277,13 +300,14 @@
             />
           {:else}
             <div class="upload-parent">
-              {#if roomImgTemp}
-                <img
-                  src={roomImgTemp ? URL.createObjectURL(roomImgTemp) : ""}
-                  alt="Room icon"
-                  class="roomImg"
-                />
-              {:else}
+              <img
+                bind:this={preview}
+                style="display: {roomImgTemp ? 'initial' : 'none'};"
+                src=""
+                alt="Room icon"
+                class="roomImg"
+              />
+              {#if !roomImgTemp}
                 <div class="upload">
                   <ImageIcon />
                 </div>

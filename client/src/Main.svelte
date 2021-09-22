@@ -10,7 +10,6 @@
   import Redirect from "./Redirect.svelte";
   import socket from "./utils/socket";
   import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-  import Profile from "./Views/Profile.svelte";
 
   let unsub;
 
@@ -32,7 +31,7 @@
             photoURL: res.photoURL,
             createdAt: Date.now(),
             rooms: [],
-            banner: "",
+            dms: [],
           };
           await setDoc(doc(db, "users", res.uid), {
             uid: res.uid,
@@ -41,7 +40,7 @@
             photoURL: res.photoURL,
             createdAt: serverTimestamp(),
             rooms: [],
-            banner: "",
+            dms: [],
           });
         }
         const from = ($location.state && $location.state.from) || "/";
@@ -64,9 +63,6 @@
   <Route path="/" component={Redirect} />
   <PrivateRoute path="/:room/:channel" let:location>
     <Home />
-  </PrivateRoute>
-  <PrivateRoute path="/settings" let:location>
-    <Profile />
   </PrivateRoute>
   <Route path="/login" component={Login} />
 </main>

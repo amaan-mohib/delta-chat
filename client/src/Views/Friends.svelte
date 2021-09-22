@@ -10,13 +10,20 @@
     setDoc,
     where,
     writeBatch,
+    updateDoc,
   } from "@firebase/firestore";
 
   import { onDestroy, onMount } from "svelte";
   import { db } from "../utils/firebase";
   import socket from "../utils/socket";
   import { DialogOverlay, DialogContent } from "svelte-accessible-dialog";
-  import { onlineUsers, selectedChannel, user } from "../utils/store";
+  import {
+    dmList,
+    onlineUsers,
+    selectedChannel,
+    selectedDM,
+    user,
+  } from "../utils/store";
   import { XIcon } from "svelte-feather-icons";
   import NoFriends from "../assets/images/undraw_friends.svg";
   import NoRequests from "../assets/images/undraw_void.svg";
@@ -113,25 +120,21 @@
   const changeURL = async (person) => {
     const participants = [person.uid, $user.uid].sort();
     const pair = participants.join("_");
-    const snap = await getDoc(doc(db, "dms", pair));
-    if (!snap.exists()) {
-      await setDoc(doc(db, "dms", pair), {
-        id: pair,
-        participants: participants,
-        category: "direct messages",
+
+    if (!$dmList.includes(person.uid)) {
+      await updateDoc(doc(db, "users", person.uid), {
+        dms: arrayUnion($user.uid),
       });
     }
-    $selectedChannel = {
+    socket.emit("joinDM", { room: pair }, (error) => {
+      if (error) console.error(error);
+    });
+    $selectedChannel = {};
+    $selectedDM = {
       id: pair,
-      participants: participants,
-      name: participants.filter((p) => p !== $user.uid)[0],
-      typeIcon: "@",
+      name: person.displayName,
+      pfp: person.photoURL,
     };
-    window.history.replaceState(
-      {},
-      `${$selectedChannel.name}`,
-      `/me/${$selectedChannel.id}`
-    );
   };
   onMount(() => {
     getFriends();
@@ -204,7 +207,13 @@
         <p class="title">Online — {online.length}</p>
         <div class="friends">
           {#each online as u}
-            <div title="Click to copy ID" class="friend" on:click={() => {}}>
+            <div
+              title="Click to copy ID"
+              class="friend"
+              on:click={() => {
+                changeURL(u);
+              }}
+            >
               <div class="img">
                 <img class="pfp" src={u.photoURL} alt={u.displayName} />
                 <!-- <div class="onlineIcon" /> -->
@@ -218,7 +227,12 @@
         <p class="title">Offline — {offline.length}</p>
         <div class="friends">
           {#each offline as u}
-            <div class="friend offline">
+            <div
+              class="friend offline"
+              on:click={() => {
+                changeURL(u);
+              }}
+            >
               <div class="img">
                 <img class="pfp" src={u.photoURL} alt={u.displayName} />
                 <!-- <div class="offlineIcon" /> -->

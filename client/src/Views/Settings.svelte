@@ -1,7 +1,8 @@
 <script>
+  export let Close;
+
   import { DialogContent, DialogOverlay } from "svelte-accessible-dialog";
   import { XIcon } from "svelte-feather-icons";
-  import { navigate } from "svelte-navigator";
   import { logout } from "../utils/firebase";
   import { user } from "../utils/store";
 
@@ -12,15 +13,12 @@
   const close = () => {
     isOpen = false;
   };
+
+  let name = $user.displayName;
+  let pfp = $user.photoURL;
 </script>
 
-<button
-  class="icon-button close"
-  title="Close"
-  on:click={() => {
-    navigate(-1);
-  }}
->
+<button class="icon-button close" title="Close" on:click={Close}>
   <XIcon />
 </button>
 <div class="profile">
@@ -44,10 +42,12 @@
             </button>
             <div class="content">
               <h2>Edit Profile</h2>
-              <input type="text" placeholder="Name" />
-              <input type="text" placeholder="Image" />
-              <button>Cancel</button>
-              <button>Confirm</button>
+              <input type="text" placeholder="Name" bind:value={name} />
+              <input type="text" placeholder="Image" bind:value={pfp} />
+              <div class="btn-bar">
+                <button>Cancel</button>
+                <button>Confirm</button>
+              </div>
             </div>
           </DialogContent>
         </DialogOverlay>
@@ -76,7 +76,6 @@
     align-items: center;
     margin: auto;
   }
-
   .card,
   .card2 {
     position: relative;
@@ -116,13 +115,6 @@
     height: 90px;
     margin-right: 15px;
   }
-  /* .banner {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100px;
-  } */
   .close {
     position: fixed;
     top: 20px;
@@ -136,5 +128,11 @@
     flex-direction: column;
     align-items: flex-end;
     justify-content: center;
+  }
+  .btn-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
   }
 </style>

@@ -3,13 +3,15 @@
   import { PhoneOffIcon, SettingsIcon } from "svelte-feather-icons";
   import { useNavigate, useLocation } from "svelte-navigator";
   import VC from "../Views/VC.svelte";
+  import { DialogContent, DialogOverlay } from "svelte-accessible-dialog";
+  import Settings from "../Views/Settings.svelte";
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const settings = () => {
-    const from = ($location.state && $location.state.from) || "/settings";
-    navigate(from);
+  let isOpen = false;
+  const open = () => {
+    isOpen = true;
+  };
+  const close = () => {
+    isOpen = false;
   };
 </script>
 
@@ -46,9 +48,14 @@
       <span class="size14 medium-text">{$user.displayName}</span>
     </div>
     <div>
-      <button class="icon-button" title="Settings" on:click={settings}>
+      <button class="icon-button" title="Settings" on:click={open}>
         <SettingsIcon />
       </button>
+      <DialogOverlay {isOpen} onDismiss={close}>
+        <DialogContent class="dialog full-dialog">
+          <Settings Close={close} />
+        </DialogContent>
+      </DialogOverlay>
     </div>
   </div>
 </div>

@@ -1,8 +1,10 @@
 <script>
   import Channel from "../../components/Channel.svelte";
   import {
+    dmList,
     isInVC,
     selectedChannel,
+    selectedDM,
     selectedRoom,
     selectedVC,
     user,
@@ -14,6 +16,7 @@
   import { useParams } from "svelte-navigator";
   import ProfileBar from "../../components/ProfileBar.svelte";
   import socket from "../../utils/socket";
+  import DmChannel from "../../components/DMChannel.svelte";
 
   // const channels = [
   //   {
@@ -23,9 +26,10 @@
   // ];
 
   let unsub;
-  let dms;
+  let dmSub;
   let channels = [];
   let vcs = [];
+  let dms = [];
   const params = useParams();
 
   $: channelID = $params.channel;
@@ -44,43 +48,24 @@
           },
         ];
         $selectedChannel = channels[0];
-        window.history.replaceState(
-          {},
-          `${$selectedChannel.name}`,
-          `/me/${$selectedChannel.id}`
+        window.history.replaceState({}, `Friends`, `/me/friends`);
+
+        const q = query(
+          collection(db, "users"),
+          where("dms", "array-contains", $user.uid)
         );
-        // // if (channelID !== "friends") {
-        // const q = query(
-        //   collection(db, "dms"),
-        //   where("participants", "array-contains", $user.uid)
-        // );
-        // dms = onSnapshot(q, (querySnapshot) => {
-        //   let allDms = querySnapshot.docs.map((doc) => doc.data());
-        //   if (allDms.length > 0) {
-        //     channels.push(...allDms);
-        //     let filteredRoom = channels.filter(
-        //       (dm) => dm.participants === channelID.split("_")
-        //     );
-        //     console.log(channels, filteredRoom);
-        //     $selectedChannel =
-        //       filteredRoom.length > 0 ? filteredRoom[0] : channels[0];
-        //   } else {
-        //     $selectedChannel = channels[0];
-        //   }
-        //   window.history.replaceState(
-        //     {},
-        //     `${$selectedChannel.name}`,
-        //     `/me/${$selectedChannel.id}`
-        //   );
-        // });
-        // } else {
-        //   $selectedChannel = channels[0];
-        //   window.history.replaceState(
-        //     {},
-        //     `${$selectedChannel.name}`,
-        //     `/me/friends`
-        //   );
-        // }
+        dmSub = onSnapshot(q, (querySnapshot) => {
+          let allDms = querySnapshot.docs.map((doc) => {
+            return {
+              name: doc.data().displayName,
+              id: [doc.data().uid, $user.uid].sort().join("_"),
+              pfp: doc.data().photoURL,
+            };
+          });
+          console.log(allDms);
+          dms = allDms;
+          $dmList = allDms;
+        });
       } else {
         const q = query(collection(db, `rooms/${$selectedRoom.id}/channels`));
         unsub = onSnapshot(q, (querySnapshot) => {
@@ -116,7 +101,7 @@
 
   onDestroy(() => {
     unsub && unsub();
-    dms && dms();
+    dmSub && dmSub();
     $selectedChannel = {
       id: "friends",
       name: "Friends",
@@ -145,13 +130,14 @@
         name={channel.name}
         type={channel.typeIcon}
         on:click={() => {
+          $selectedDM = null;
           $isInVC = false;
           changeURLChannel(channel);
         }}
       />
     {/each}
     <div style="margin-bottom: 10px;" />
-    {#if vcs.length > 0}
+    {#if vcs.length > 0 && $selectedRoom.id !== "me"}
       <p class="category">Voice Channels</p>
       {#each vcs as channel (channel.id)}
         <Channel
@@ -159,6 +145,7 @@
           name={channel.name}
           type={channel.typeIcon}
           on:click={() => {
+            $selectedDM = null;
             if (
               $usersInVC[channel.id] &&
               $usersInVC[channel.id].some((u) => u.user.uid === $user.uid)
@@ -177,6 +164,24 @@
                 $selectedVC = { ...channel, room: $selectedRoom };
               }
             }
+          }}
+        />
+      {/each}
+    {/if}
+    <div style="margin-bottom: 10px;" />
+    {#if dms.length > 0 && $selectedRoom.id === "me"}
+      <p class="category">Direct Messages</p>
+      {#each dms as channel (channel.id)}
+        <DmChannel
+          id={channel.id}
+          name={channel.name}
+          pfp={channel.pfp}
+          on:click={() => {
+            $selectedChannel = {};
+            $selectedDM = channel;
+            socket.emit("joinDM", { room: channel.id }, (error) => {
+              if (error) console.error(error);
+            });
           }}
         />
       {/each}

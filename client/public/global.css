@@ -31,6 +31,13 @@ body {
   top: 10px;
   right: 10px;
 }
+.full-dialog {
+  width: 100% !important;
+  max-width: unset;
+  height: 100%;
+  margin: 0 !important;
+  border-radius: 0;
+}
 button {
   min-width: 60px;
   min-height: 32px;

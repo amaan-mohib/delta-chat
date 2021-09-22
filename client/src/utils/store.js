@@ -11,3 +11,5 @@ export const selectedChannel = writable({
 export const selectedVC = writable(null);
 export const isInVC = writable(false);
 export const usersInVC = writable([]);
+export const selectedDM = writable(null);
+export const dmList = writable([]);
