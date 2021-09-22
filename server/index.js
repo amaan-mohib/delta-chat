@@ -36,6 +36,11 @@ io.on("connect", (socket) => {
     callback();
   });
 
+  socket.on("joinDM", ({ room }, callback) => {
+    socket.join(room);
+    callback();
+  });
+
   socket.on(
     "sendMessage",
     ({ user, text, room, channel, sentAt }, callback) => {
