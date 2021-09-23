@@ -13,10 +13,12 @@ const compressImage = (image, scale, initalWidth, initalHeight) => {
     }, "image/png");
   });
 };
-export const getHeightAndWidth = (file) =>
-  new Promise((resolve) => {
+
+const getHeightAndWidth = (file) => {
+  return new Promise((resolve) => {
     const dataURL = URL.createObjectURL(file);
     const img = new Image();
+
     img.onload = () => {
       resolve({
         height: img.height,
@@ -25,5 +27,30 @@ export const getHeightAndWidth = (file) =>
     };
     img.src = dataURL;
   });
+};
 
-export default compressImage;
+const finalCompressedBlob = (file, preview, MAX = 256) => {
+  return new Promise(async (resolve) => {
+    const { height, width } = await getHeightAndWidth(file);
+    const widthRatioBlob = await compressImage(
+      preview,
+      MAX / width,
+      width,
+      height
+    );
+    const heightRatioBlob = await compressImage(
+      preview,
+      MAX / height,
+      width,
+      height
+    );
+    const compressedBlob =
+      widthRatioBlob.size > heightRatioBlob.size
+        ? heightRatioBlob
+        : widthRatioBlob;
+
+    resolve(compressedBlob);
+  });
+};
+
+export default finalCompressedBlob;

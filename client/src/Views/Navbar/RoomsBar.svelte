@@ -17,7 +17,7 @@
   import { isInVC, selectedRoom, user } from "../../utils/store";
   import socket from "../../utils/socket";
   import { getDownloadURL, ref, uploadBytesResumable } from "@firebase/storage";
-  import compressImage, { getHeightAndWidth } from "../../utils/compressImage";
+  import finalCompressedBlob from "../../utils/compressImage";
 
   let isOpen = false;
   const open = () => {
@@ -199,24 +199,7 @@
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     preview.src = URL.createObjectURL(file);
-    const { height, width } = await getHeightAndWidth(file);
-    const MAX = 256;
-    const widthRatioBlob = await compressImage(
-      preview,
-      MAX / width,
-      width,
-      height
-    );
-    const heightRatioBlob = await compressImage(
-      preview,
-      MAX / height,
-      width,
-      height
-    );
-    const compressedBlob =
-      widthRatioBlob.size > heightRatioBlob.size
-        ? heightRatioBlob
-        : widthRatioBlob;
+    const compressedBlob = await finalCompressedBlob(file, preview);
     preview.src = URL.createObjectURL(compressedBlob);
     roomImgTemp = compressedBlob;
     URL.revokeObjectURL(preview);

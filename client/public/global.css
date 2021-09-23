@@ -103,6 +103,13 @@ button:disabled {
   cursor: pointer;
   background-color: hsl(0, 0%, 25%);
 }
+.icon-button-small {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 2px;
+}
 input[type="text"] {
   min-height: 32px;
   padding: 5px 10px;
@@ -117,6 +124,9 @@ input[type="text"]:hover {
 .size14 {
   font-size: 14px;
 }
+.size12 {
+  font-size: 12px;
+}
 .medium-text {
   font-weight: 500;
 }
@@ -124,6 +134,7 @@ input[type="text"]:hover {
   width: 30px;
   height: 30px;
   border-radius: 50%;
+  object-fit: cover;
 }
 .offlineIcon {
   width: 5px;

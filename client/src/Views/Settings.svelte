@@ -1,10 +1,10 @@
 <script>
   export let Close;
 
-  import { DialogContent, DialogOverlay } from "svelte-accessible-dialog";
   import { XIcon } from "svelte-feather-icons";
-  import { logout } from "../utils/firebase";
   import { user } from "../utils/store";
+  import Profile from "../components/Profile.svelte";
+  import { logout } from "../utils/firebase";
 
   let isOpen = false;
   const open = () => {
@@ -13,9 +13,6 @@
   const close = () => {
     isOpen = false;
   };
-
-  let name = $user.displayName;
-  let pfp = $user.photoURL;
 </script>
 
 <button class="icon-button close" title="Close" on:click={Close}>
@@ -31,26 +28,7 @@
       </div>
       <div class="flex2">
         <button style="margin-bottom: 10px;" on:click={open}>Edit</button>
-        <DialogOverlay {isOpen} onDismiss={close}>
-          <DialogContent aria-label="Edit Profile" class="dialog">
-            <button
-              on:click={close}
-              class="icon-button x-icon"
-              style="align-self: flex-end;"
-            >
-              <XIcon />
-            </button>
-            <div class="content">
-              <h2>Edit Profile</h2>
-              <input type="text" placeholder="Name" bind:value={name} />
-              <input type="text" placeholder="Image" bind:value={pfp} />
-              <div class="btn-bar">
-                <button>Cancel</button>
-                <button>Confirm</button>
-              </div>
-            </div>
-          </DialogContent>
-        </DialogOverlay>
+        <Profile Close={close} {isOpen} />
         <button class="btn-outline" on:click={logout}>Log Out</button>
       </div>
     </div>
@@ -128,11 +106,5 @@
     flex-direction: column;
     align-items: flex-end;
     justify-content: center;
-  }
-  .btn-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 10px;
   }
 </style>

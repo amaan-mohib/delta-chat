@@ -17,6 +17,7 @@
   import ProfileBar from "../../components/ProfileBar.svelte";
   import socket from "../../utils/socket";
   import DmChannel from "../../components/DMChannel.svelte";
+  import { PlusIcon } from "svelte-feather-icons";
 
   // const channels = [
   //   {
@@ -123,7 +124,19 @@
   <h4>{$selectedRoom.name}</h4>
   <hr />
   <div class="channels">
-    <p class="category">Text Channels</p>
+    {#if $selectedRoom.id !== "me"}
+      <div
+        style="display: flex;align-items:center;justify-content:space-between"
+      >
+        <p class="category">Text Channels</p>
+        <button
+          class="icon-button-small btn-small btn-outline"
+          title="Add Channel"
+        >
+          <PlusIcon />
+        </button>
+      </div>
+    {/if}
     {#each channels as channel (channel.id)}
       <Channel
         id={channel.id}
@@ -138,7 +151,17 @@
     {/each}
     <div style="margin-bottom: 10px;" />
     {#if vcs.length > 0 && $selectedRoom.id !== "me"}
-      <p class="category">Voice Channels</p>
+      <div
+        style="display: flex;align-items:center;justify-content:space-between"
+      >
+        <p class="category">Voice Channels</p>
+        <button
+          class="icon-button-small btn-small btn-outline"
+          title="Add Channel"
+        >
+          <PlusIcon />
+        </button>
+      </div>
       {#each vcs as channel (channel.id)}
         <Channel
           id={channel.id}
