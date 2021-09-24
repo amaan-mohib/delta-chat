@@ -10,6 +10,7 @@
   import Redirect from "./Redirect.svelte";
   import socket from "./utils/socket";
   import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+  import Invite from "./Views/Invite.svelte";
 
   let unsub;
 
@@ -51,7 +52,6 @@
           if (error) console.error(error);
         });
       } else {
-        // navigate("/login", { replace: true });
         user.set(null);
       }
     });
@@ -63,6 +63,9 @@
   <Route path="/" component={Redirect} />
   <PrivateRoute path="/:room/:channel" let:location>
     <Home />
+  </PrivateRoute>
+  <PrivateRoute path="/invite/:room" let:location>
+    <Invite />
   </PrivateRoute>
   <Route path="/login" component={Login} />
 </main>

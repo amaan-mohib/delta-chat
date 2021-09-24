@@ -147,38 +147,34 @@
             rooms: arrayUnion(roomID),
           });
 
-          const roomSnap = await getDoc(docRef);
-          if (roomSnap.exists()) {
-            socket.emit(
-              "sendMessage",
-              {
-                user: { displayName: "admin" },
+          socket.emit(
+            "sendMessage",
+            {
+              user: { displayName: "admin" },
+              text: `${$user.displayName} just joined in`,
+              room: roomID,
+              channel: snap.data().general,
+              sentAt: new Date().toLocaleDateString("en-IN"),
+            },
+            async () => {
+              //storing in db
+              const msgRef = doc(
+                collection(
+                  db,
+                  `rooms/${roomID}/channels/${snap.data().general}/messages`
+                )
+              );
+              await setDoc(msgRef, {
+                sender: { displayName: "admin" },
                 text: `${$user.displayName} just joined in`,
                 room: roomID,
-                channel: roomSnap.data().general,
-                sentAt: new Date().toLocaleDateString("en-IN"),
-              },
-              async () => {
-                //storing in db
-                const msgRef = doc(
-                  collection(
-                    db,
-                    `rooms/${roomID}/channels/${
-                      roomSnap.data().general
-                    }/messages`
-                  )
-                );
-                await setDoc(msgRef, {
-                  sender: { displayName: "admin" },
-                  text: `${$user.displayName} just joined in`,
-                  room: roomID,
-                  channel: roomSnap.data().general,
-                  id: msgRef.id,
-                  sentAt: serverTimestamp(),
-                });
-              }
-            );
-          }
+                channel: snap.data().general,
+                id: msgRef.id,
+                sentAt: serverTimestamp(),
+              });
+            }
+          );
+
           await batch.commit();
           close();
           isNext = false;

@@ -133,9 +133,8 @@
       >
       <input type="text" placeholder="Name" bind:value={name} title="Name" />
       <i class="grey-text size12" style="text-align: left;"
-        >Last Modified: {$user.modifiedAt
-          .toDate()
-          .toLocaleDateString("en-IN") ||
+        >Last Modified: {($user.modifiedAt &&
+          $user.modifiedAt.toDate().toLocaleDateString("en-IN")) ||
           $user.createdAt.toDate().toLocaleDateString("en-IN")}</i
       >
       <div class="btn-bar">
