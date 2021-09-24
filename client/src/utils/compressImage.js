@@ -29,6 +29,7 @@ const getHeightAndWidth = (file) => {
   });
 };
 
+/** Compress an image blob file */
 const finalCompressedBlob = (file, preview, MAX = 256) => {
   return new Promise(async (resolve) => {
     const { height, width } = await getHeightAndWidth(file);
@@ -49,7 +50,9 @@ const finalCompressedBlob = (file, preview, MAX = 256) => {
         ? heightRatioBlob
         : widthRatioBlob;
 
-    resolve(compressedBlob);
+    const final = compressedBlob.size > file.size ? file : compressedBlob;
+
+    resolve(final);
   });
 };
 

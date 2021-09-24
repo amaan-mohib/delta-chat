@@ -17,14 +17,8 @@
   import ProfileBar from "../../components/ProfileBar.svelte";
   import socket from "../../utils/socket";
   import DmChannel from "../../components/DMChannel.svelte";
-  import { PlusIcon } from "svelte-feather-icons";
-
-  // const channels = [
-  //   {
-  //     name: "first",
-  //     type: "✏️",
-  //   },
-  // ];
+  import AddChannel from "../../components/AddChannel.svelte";
+  import EditRoom from "../../components/EditRoom.svelte";
 
   let unsub;
   let dmSub;
@@ -121,7 +115,16 @@
 </script>
 
 <div class="channels-bar">
-  <h4>{$selectedRoom.name}</h4>
+  <div
+    class="h4"
+    style="display: flex;align-items:center;justify-content:space-between"
+  >
+    <h4>{$selectedRoom.name}</h4>
+    {#if $selectedRoom.id !== "me"}
+      <EditRoom />
+    {/if}
+  </div>
+
   <hr />
   <div class="channels">
     {#if $selectedRoom.id !== "me"}
@@ -129,12 +132,7 @@
         style="display: flex;align-items:center;justify-content:space-between"
       >
         <p class="category">Text Channels</p>
-        <button
-          class="icon-button-small btn-small btn-outline"
-          title="Add Channel"
-        >
-          <PlusIcon />
-        </button>
+        <AddChannel type={"Text"} />
       </div>
     {/if}
     {#each channels as channel (channel.id)}
@@ -155,12 +153,7 @@
         style="display: flex;align-items:center;justify-content:space-between"
       >
         <p class="category">Voice Channels</p>
-        <button
-          class="icon-button-small btn-small btn-outline"
-          title="Add Channel"
-        >
-          <PlusIcon />
-        </button>
+        <AddChannel type={"Voice"} />
       </div>
       {#each vcs as channel (channel.id)}
         <Channel
@@ -214,14 +207,12 @@
 </div>
 
 <style>
-  h4 {
+  .h4 {
     text-transform: uppercase;
     text-overflow: ellipsis;
-    overflow-x: hidden;
-    overflow-y: clip;
+    min-height: 50px;
     padding: 10px;
     width: 240px;
-    height: 40px;
   }
   hr {
     border: none;

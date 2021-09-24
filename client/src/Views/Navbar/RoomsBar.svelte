@@ -389,12 +389,6 @@
   .room-dialog > * {
     margin: 5px 0;
   }
-  .btn-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 10px;
-  }
   .upload-parent {
     position: relative;
     width: 80px;

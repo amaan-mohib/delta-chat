@@ -37,7 +37,7 @@
   });
   onDestroy(() => {
     unsub && unsub();
-    $selectedRoom = { name: "Loading" };
+    $selectedRoom = { id: "me", name: "Home" };
   });
 </script>
 

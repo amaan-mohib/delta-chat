@@ -140,7 +140,9 @@
       >
       <div class="btn-bar">
         <button on:click={Close}>Cancel</button>
-        <button on:click={changeProfile}>Confirm</button>
+        <button disabled={name.trim() === ""} on:click={changeProfile}
+          >Confirm</button
+        >
       </div>
     </div>
   </DialogContent>
@@ -157,12 +159,6 @@
   }
   .content > * {
     margin: 5px 0;
-  }
-  .btn-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 10px;
   }
   .upload-parent {
     position: relative;

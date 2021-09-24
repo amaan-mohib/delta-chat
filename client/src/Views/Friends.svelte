@@ -278,23 +278,8 @@
 
 <style>
   .chat {
-    display: flex;
     flex-direction: column;
-    background-color: hsl(0, 0%, 25%);
-    width: 100%;
-    height: 100%;
-    padding-top: 40px;
-  }
-  header {
-    position: fixed;
-    top: 0;
-    height: 40px;
-    padding: 10px;
-    border-bottom: 1px solid hsl(0, 0%, 15%);
-    width: calc(100% - 72px - 240px);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    justify-content: unset;
   }
   .friends {
     width: 100%;

@@ -151,6 +151,32 @@ input[type="text"]:hover {
 .grey-text {
   color: hsl(0, 0%, 70%);
 }
+.btn-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.chat {
+  display: flex;
+  background-color: hsl(0, 0%, 25%);
+  width: 100%;
+  height: 100%;
+  justify-content: space-between;
+  padding-top: 50px;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  width: calc(100% - 72px - 240px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  padding: 10px;
+  border-bottom: 1px solid hsl(0, 0%, 15%);
+}
 /* a {
 	color: rgb(0,100,200);
 	text-decoration: none;

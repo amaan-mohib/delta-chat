@@ -149,26 +149,6 @@
 </div>
 
 <style>
-  .chat {
-    display: flex;
-    background-color: hsl(0, 0%, 25%);
-    width: 100%;
-    height: 100%;
-    justify-content: space-between;
-    padding-top: 40px;
-  }
-
-  header {
-    position: fixed;
-    top: 0;
-    width: calc(100% - 72px - 240px);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 40px;
-    padding: 10px;
-    border-bottom: 1px solid hsl(0, 0%, 15%);
-  }
   .chat-main {
     display: flex;
     flex-direction: column;
