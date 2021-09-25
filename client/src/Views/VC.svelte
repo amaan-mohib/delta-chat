@@ -20,7 +20,11 @@
   let isMic = true;
   let isCam = true;
 
-  // $: console.log(peerRef);
+  let audioContext = null;
+  let volumeCallback = null;
+  let volumeInterval = null;
+  let volumes = [];
+  let volume = 0;
 
   const createPeer = (userToSignal, callerID, stream, userR) => {
     const peer = new Peer({
@@ -86,8 +90,15 @@
       }
     }
   };
+
+  $: if (volumeCallback !== null && volumeInterval === null)
+    volumeInterval = setInterval(volumeCallback, 100);
+
   onMount(() => {
     console.log("rendered again");
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioContext = new AudioContext();
+
     if ($selectedVC) {
       navigator.mediaDevices
         .getUserMedia({
@@ -100,6 +111,24 @@
           }
           streamProp = stream;
           streamState = stream;
+
+          const audioSource = audioContext.createMediaStreamSource(stream);
+          const analyser = audioContext.createAnalyser();
+          analyser.fftSize = 2048;
+          analyser.minDecibels = -127;
+          analyser.maxDecibels = 0;
+          analyser.smoothingTimeConstant = 0.4;
+          audioSource.connect(analyser);
+          volumes = new Uint8Array(analyser.frequencyBinCount);
+          volumeCallback = () => {
+            analyser.getByteFrequencyData(volumes);
+            let volumeSum = 0;
+            for (const volume of volumes) volumeSum += volume;
+            const averageVolume = volumeSum / volumes.length;
+            // Value range: 127 = analyser.maxDecibels - analyser.minDecibels;
+            volume = averageVolume / 127;
+          };
+
           socket.emit("joinVC", { channelID: $selectedVC.id, user: $user });
           // socket.on("allUsers", (data) => {
           //   $usersInVC = data;
@@ -116,8 +145,6 @@
                   peer,
                 });
                 peerRef = peersL;
-                // peersL.push(peer);
-                // peers = peersL;
               });
             }
           });
@@ -129,18 +156,27 @@
               peer,
             });
             peerRef = peerRef;
-            // peers.push(peer);
-            // peers = peers;
+            if (!isCam) {
+              socket.emit("removeTrack", {
+                channelID: $selectedVC.id,
+                sid: socket.id,
+                track: "camera",
+              });
+            }
+            if (!isMic) {
+              socket.emit("removeTrack", {
+                channelID: $selectedVC.id,
+                sid: socket.id,
+                track: "mic",
+              });
+            }
           });
 
           socket.on("receiving returned signal", (payload) => {
             const item = peerRef.find((p) => p.peerID === payload.id);
             item.peer.signal(payload.signal);
           });
-          // console.log(peers);
-          // socket.on("disconnectVC", (data) => {
 
-          // });
           socket.on("user left", (sid) => {
             const peerObj = peerRef.find((p) => p.peerID === sid);
             if (peerObj) {
@@ -149,17 +185,18 @@
             }
             const peersL = peerRef.filter((p) => p.peerID !== sid);
             peerRef = peersL;
-            // peers = peersL;
-            // console.log(peers);
           });
         });
     }
   });
   onDestroy(() => {
     if (streamState) {
+      if (volumeInterval !== null) {
+        clearInterval(volumeInterval);
+        volumeInterval = null;
+      }
       streamState.getTracks().forEach((t) => t.stop());
       peerRef = [];
-      // peers = [];
       socket.off();
       socket.disconnect();
     }
@@ -168,7 +205,7 @@
 
 <div class="vc">
   <div class="videos">
-    <div class="video">
+    <div class="video" style="box-shadow: 0 0 0 {volume * 5}px;">
       {#if !isMic}
         <div class="icon-button mic-off" aria-disabled="true">
           <MicOffIcon />
@@ -192,9 +229,7 @@
       />
     </div>
     {#each peerRef as ref (ref.peerID)}
-      <div class="video">
-        <VideoRemote peer={ref.peer} socketid={ref.peerID} />
-      </div>
+      <VideoRemote peer={ref.peer} socketid={ref.peerID} />
     {/each}
   </div>
   <div class="controls">
@@ -261,7 +296,7 @@
   .videos {
     display: grid;
     padding: 10px;
-    gap: 10px;
+    gap: 15px;
     width: 100%;
     align-items: center;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -295,6 +330,7 @@
     border-radius: 5px;
     overflow: hidden;
     background-color: hsl(0, 0%, 15%);
+    transition: box-shadow 100ms linear;
   }
   :global(video) {
     width: 100%;
