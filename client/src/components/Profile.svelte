@@ -135,7 +135,9 @@
       <i class="grey-text size12" style="text-align: left;"
         >Last Modified: {($user.modifiedAt &&
           $user.modifiedAt.toDate().toLocaleDateString("en-IN")) ||
-          $user.createdAt.toDate().toLocaleDateString("en-IN")}</i
+        typeof $user.createdAt === "string"
+          ? $user.createdAt
+          : $user.createdAt.toDate().toLocaleDateString("en-IN")}</i
       >
       <div class="btn-bar">
         <button on:click={Close}>Cancel</button>

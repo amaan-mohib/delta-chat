@@ -20,6 +20,9 @@
     unsub = onAuthStateChanged(auth, async (res) => {
       // console.log(res);
       if (res) {
+        if (socket.disconnected) {
+          socket.connect();
+        }
         const userRef = doc(db, "users", res.uid);
         const snap = await getDoc(userRef);
         if (snap.exists()) {
@@ -52,6 +55,8 @@
           if (error) console.error(error);
         });
       } else {
+        socket.removeAllListeners();
+        socket.disconnect();
         user.set(null);
       }
     });

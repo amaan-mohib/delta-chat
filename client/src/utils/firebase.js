@@ -7,6 +7,7 @@ import {
   getAuth,
   signInWithPopup,
   GoogleAuthProvider,
+  GithubAuthProvider,
   signOut,
 } from "firebase/auth";
 // import { user } from "./store";
@@ -18,7 +19,11 @@ const analytics = getAnalytics(app);
 //Auth
 export const auth = getAuth();
 const provider = new GoogleAuthProvider();
+const ghProvider = new GithubAuthProvider();
 provider.setCustomParameters({
+  prompt: "select_account",
+});
+ghProvider.setCustomParameters({
   prompt: "select_account",
 });
 export const login = () => {
@@ -26,6 +31,13 @@ export const login = () => {
     .then((res) => {
       console.log(res);
       // user.set(res.user);
+    })
+    .catch((err) => console.error(err));
+};
+export const ghLogin = () => {
+  signInWithPopup(auth, ghProvider)
+    .then((res) => {
+      console.log(res);
     })
     .catch((err) => console.error(err));
 };

@@ -9,7 +9,6 @@
     arrayUnion,
     doc,
     writeBatch,
-    updateDoc,
     getDoc,
     serverTimestamp,
   } from "firebase/firestore";
