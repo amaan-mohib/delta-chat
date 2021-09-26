@@ -10,6 +10,7 @@
     selectedVC,
     user,
     usersInVC,
+    app,
   } from "../../utils/store";
   import { collection, query, onSnapshot, where } from "firebase/firestore";
   import { db } from "../../utils/firebase";
@@ -44,6 +45,7 @@
           },
         ];
         $selectedChannel = channels[0];
+        document.title = app;
         window.history.replaceState({}, `Friends`, `/me/friends`);
 
         const q = query(
@@ -78,6 +80,7 @@
           }
           // console.log(channels, $selectedChannel);
           if (channels.length > 0) {
+            document.title = `${$selectedChannel.name} - ${app}`;
             window.history.replaceState(
               {},
               `${$selectedChannel.name}`,
@@ -98,6 +101,7 @@
   onDestroy(() => {
     unsub && unsub();
     dmSub && dmSub();
+    document.title = app;
     $selectedChannel = {
       id: "friends",
       name: "Friends",
@@ -107,6 +111,7 @@
 
   const changeURLChannel = (channel) => {
     $selectedChannel = channel;
+    document.title = `${$selectedChannel.name} - ${app}`;
     window.history.replaceState(
       {},
       `${$selectedChannel.name}`,

@@ -16,3 +16,4 @@ export const dmList = writable([]);
 export const menu = writable(false);
 export const status = writable("Connecting...");
 export const appName = "http://localhost:5000";
+export const app = "δ Chat";

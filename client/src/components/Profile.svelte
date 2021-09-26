@@ -9,7 +9,7 @@
   export let isOpen;
 
   import { DialogContent, DialogOverlay } from "svelte-accessible-dialog";
-  import { PlusSquareIcon, XIcon } from "svelte-feather-icons";
+  import { LoaderIcon, PlusSquareIcon, XIcon } from "svelte-feather-icons";
   import finalCompressedBlob from "../utils/compressImage";
   import { db, storageRef } from "../utils/firebase";
   import { user } from "../utils/store";
@@ -19,6 +19,7 @@
   let preview;
   let pfpTemp = null;
   let remove = false;
+  let loading = false;
 
   const uploadImage = (id) => {
     return new Promise((resolve, reject) => {
@@ -54,6 +55,7 @@
   };
 
   const changeProfile = async () => {
+    loading = true;
     await uploadImage($user.uid);
     const auth = getAuth();
     updateProfile(auth.currentUser, {
@@ -74,6 +76,7 @@
         $user.displayName = name;
         $user.photoURL = pfp;
         $user.modifiedAt = new Date().toLocaleDateString("en-IN");
+        loading = false;
         Close();
       })
       .catch((e) => console.error(e));
@@ -141,8 +144,12 @@
       >
       <div class="btn-bar">
         <button on:click={Close}>Cancel</button>
-        <button disabled={name.trim() === ""} on:click={changeProfile}
-          >Confirm</button
+        <button disabled={name.trim() === ""} on:click={changeProfile}>
+          {#if loading}
+            <div class="loading"><LoaderIcon /></div>
+          {:else}
+            Confirm
+          {/if}</button
         >
       </div>
     </div>

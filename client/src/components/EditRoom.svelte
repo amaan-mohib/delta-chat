@@ -5,6 +5,7 @@
   import {
     CheckIcon,
     CopyIcon,
+    LoaderIcon,
     MoreHorizontalIcon,
     PlusSquareIcon,
     SettingsIcon,
@@ -21,6 +22,7 @@
   let remove = false;
   let preview;
   let isOpen = false;
+  let loading = false;
   const open = () => {
     isOpen = true;
     $menu = false;
@@ -82,6 +84,7 @@
     });
   };
   const editRoom = async () => {
+    loading = true;
     await uploadImage($selectedRoom.id);
     const docRef = doc(db, "rooms", $selectedRoom.id);
     try {
@@ -89,10 +92,11 @@
         name,
         img: pfp,
       });
-      close();
     } catch (e) {
       console.error(e);
     }
+    loading = false;
+    close();
   };
 
   const handleUpload = async (e) => {
@@ -194,9 +198,13 @@
 
       <div class="btn-bar">
         <button on:click={close}>Cancel</button>
-        <button disabled={name.trim() === ""} on:click={editRoom}
-          >Confirm</button
-        >
+        <button disabled={name.trim() === ""} on:click={editRoom}>
+          {#if loading}
+            <div class="loading"><LoaderIcon /></div>
+          {:else}
+            Confirm
+          {/if}
+        </button>
       </div>
     </div>
   </DialogContent>

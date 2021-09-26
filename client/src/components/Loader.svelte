@@ -7,7 +7,7 @@
 <style>
   #circleG {
     width: 146px;
-    margin: auto;
+    transform: scale(0.3);
   }
 
   .circleG {

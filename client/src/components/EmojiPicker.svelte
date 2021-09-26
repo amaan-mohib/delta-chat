@@ -37,9 +37,11 @@
       on:input={changeOnCustom}
       style="width: 120px;"
     />
-    <i class="grey-text size12" style="margin-top: 10px;"
-      >Hint: Press <kbd>Win</kbd> + <kbd>.</kbd></i
-    >
+    {#if navigator.userAgentData && navigator.userAgentData.platform === "Windows"}
+      <i class="grey-text size12" style="margin-top: 10px;"
+        >Hint: Press <kbd>Win</kbd> + <kbd>.</kbd></i
+      >
+    {/if}
   </div>
 </div>
 

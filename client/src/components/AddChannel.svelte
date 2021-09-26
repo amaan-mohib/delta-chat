@@ -1,7 +1,7 @@
 <script>
   export let type = "";
   import { DialogContent, DialogOverlay } from "svelte-accessible-dialog";
-  import { PlusIcon, XIcon } from "svelte-feather-icons";
+  import { LoaderIcon, PlusIcon, XIcon } from "svelte-feather-icons";
   import emoji from "../assets/emoji";
   import EmojiPicker from "./EmojiPicker.svelte";
   import clickOutside from "../utils/clickOutside";
@@ -11,6 +11,7 @@
 
   let isOpen = false;
   let isEmoji = false;
+  let loading = false;
   const open = () => {
     isOpen = true;
     $menu = false;
@@ -29,6 +30,7 @@
   let name = "";
 
   const createChannel = async () => {
+    loading = true;
     const channelRef = doc(
       collection(db, "rooms", $selectedRoom.id, "channels")
     );
@@ -43,6 +45,7 @@
     } catch (e) {
       console.error(e);
     }
+    loading = false;
     close();
   };
 </script>
@@ -90,8 +93,14 @@
         <button on:click={close}>Cancel</button>
         <button
           disabled={name.trim() === "" && typeIcon.trim() === ""}
-          on:click={createChannel}>Add</button
+          on:click={createChannel}
         >
+          {#if loading}
+            <div class="loading"><LoaderIcon /></div>
+          {:else}
+            Add
+          {/if}
+        </button>
       </div>
     </div>
   </DialogContent>

@@ -3,6 +3,7 @@
 
   import { socketVC as socket } from "../utils/socket";
   import { selectedVC, usersInVC } from "../utils/store";
+  import Loader from "./Loader.svelte";
 
   export let peer;
   export let socketid;
@@ -10,6 +11,7 @@
   let video;
   let isMic = true;
   let isCam = true;
+  let loading = true;
 
   let audioContext = null;
   let volumeCallback = null;
@@ -22,6 +24,7 @@
 
   $: peer &&
     peer.on("stream", (stream) => {
+      loading = false;
       video.srcObject = stream;
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
       audioContext = new AudioContext();
@@ -74,8 +77,11 @@
   <div class="name" aria-disabled="true">
     {userRemote.displayName || "Loading"}
   </div>
+  {#if loading}
+    <Loader />
+  {/if}
   <div
-    style="display: {isCam ? 'initial' : 'none'};width: 100%;
+    style="display: {isCam && !loading ? 'initial' : 'none'};width: 100%;
       height: 100%;"
   >
     <video bind:this={video} autoplay playsinline>

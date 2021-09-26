@@ -7,6 +7,7 @@
     HomeIcon,
     ImageIcon,
     MenuIcon,
+    LoaderIcon,
   } from "svelte-feather-icons";
   import { DialogOverlay, DialogContent } from "svelte-accessible-dialog";
   import {
@@ -19,10 +20,11 @@
     serverTimestamp,
   } from "firebase/firestore";
   import { db, storageRef } from "../../utils/firebase";
-  import { isInVC, menu, selectedRoom, user } from "../../utils/store";
+  import { appName, isInVC, menu, selectedRoom, user } from "../../utils/store";
   import socket from "../../utils/socket";
   import { getDownloadURL, ref, uploadBytesResumable } from "@firebase/storage";
   import finalCompressedBlob from "../../utils/compressImage";
+  import Loader from "../../components/Loader.svelte";
 
   let isOpen = false;
   const open = () => {
@@ -42,6 +44,8 @@
   let roomID = "";
   let isImgLink = false;
   let preview;
+  let creating = false;
+  let joining = false;
 
   const channels = [
     {
@@ -92,6 +96,7 @@
   };
 
   const createRoom = async () => {
+    creating = true;
     try {
       const batch = writeBatch(db);
       const docRef = doc(collection(db, "rooms"));
@@ -121,6 +126,7 @@
         }
       });
       await batch.commit();
+      creating = false;
       close();
       isNext = false;
       isCreateRoom = false;
@@ -130,15 +136,19 @@
       roomID = "";
       isImgLink = false;
     } catch (e) {
+      creating = false;
       console.error(e);
       error = "Oops! Something went wrong 🤕";
     }
   };
 
   const join = async () => {
+    roomID = roomID.split("/");
+    roomID = roomID[roomID.length - 1];
     if ($user.rooms.includes(roomID)) {
       error = "WDYM? You are already in the Room 🤔";
     } else {
+      joining = true;
       const snap = await getDoc(doc(db, "rooms", roomID));
       if (snap.exists()) {
         try {
@@ -181,6 +191,7 @@
           );
 
           await batch.commit();
+          joining = false;
           close();
           isNext = false;
           isCreateRoom = false;
@@ -188,10 +199,12 @@
           roomImg = "";
           roomID = "";
         } catch (e) {
+          joining = false;
           console.error(e);
           error = "Oops! Something went wrong 🤕";
         }
       } else {
+        joining = false;
         error = "The Room you are looking for does not exists 🙁";
       }
     }
@@ -347,16 +360,25 @@
                 isImgLink = false;
               }}>Back</button
             >
-            <button disabled={roomName.trim() === ""} on:click={createRoom}
-              >Create</button
-            >
+            <button disabled={roomName.trim() === ""} on:click={createRoom}>
+              {#if creating}
+                <div class="loading"><LoaderIcon /></div>
+              {:else}
+                Create
+              {/if}
+            </button>
           </div>
         {:else}
           <h2>Join a Room</h2>
           <p class="size14 grey-text" style="margin-bottom: 20px;">
-            Enter a Room ID to join an existing server
+            Enter a Room ID or link to join an existing server
           </p>
           <input bind:value={roomID} type="text" placeholder="Room ID" />
+          <p class="size12 grey-text" style="margin: 10px 0;text-align:left">
+            They look like:<br />
+            ZLHtd1QH52Z9IV0PxX3n<br />
+            {`${appName}/invite/ZLHtd1QH52Z9IV0PxX3n`}
+          </p>
           {#if error}
             <p class="size14">{error}</p>
           {/if}
@@ -368,7 +390,12 @@
                 error = "";
               }}>Back</button
             >
-            <button disabled={roomID.trim() === ""} on:click={join}>Join</button
+            <button disabled={roomID.trim() === ""} on:click={join}>
+              {#if joining}
+                <div class="loading"><LoaderIcon /></div>
+              {:else}
+                Join
+              {/if}</button
             >
           </div>
         {/if}

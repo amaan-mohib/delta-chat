@@ -13,10 +13,12 @@
     MicOffIcon,
     PhoneOffIcon,
   } from "svelte-feather-icons";
+  import Loader from "../components/Loader.svelte";
 
   let streamProp;
   let peerRef = [];
   let streamState;
+  let loading = false;
   let isMic = true;
   let isCam = true;
 
@@ -185,6 +187,10 @@
             const peersL = peerRef.filter((p) => p.peerID !== sid);
             peerRef = peersL;
           });
+        })
+        .catch((e) => {
+          console.error(e);
+          loading = true;
         });
     }
   });
@@ -215,8 +221,13 @@
       <div class="name" aria-disabled="true">
         {$user.displayName}
       </div>
+      {#if !streamProp}
+        <Loader />
+      {:else if loading}
+        <p>Looks like you don't have access to your media devices</p>
+      {/if}
       <div
-        style="display: {isCam ? 'initial' : 'none'};width: 100%;
+        style="display: {isCam && streamProp ? 'initial' : 'none'};width: 100%;
       height: 100%;"
       >
         <Video stream={streamProp} />

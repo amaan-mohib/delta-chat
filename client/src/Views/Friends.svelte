@@ -245,7 +245,7 @@
     {:else}
       <div class="empty">
         <img src={NoFriends} alt="no friends" class="illustration" />
-        <div>No friends yet. Hope you got a cat 😊</div>
+        <p class="size14">No friends yet. Hope you got a cat 😊</p>
       </div>
     {/if}
   {/if}
@@ -270,7 +270,9 @@
     {:else}
       <div class="empty">
         <img src={NoRequests} class="illustration" alt="no requests" />
-        <div>You are staring into the void. No Requests for now.</div>
+        <p class="size14">
+          You are staring into the void. No Requests for now.
+        </p>
       </div>
     {/if}
   {/if}
@@ -346,6 +348,8 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    padding: 10px;
+    text-align: center;
   }
   .illustration {
     margin-bottom: 40px;

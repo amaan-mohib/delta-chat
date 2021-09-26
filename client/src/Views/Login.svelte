@@ -3,8 +3,22 @@
   import google from "../assets/images/google.svg";
   import delta from "../assets/images/delta.svg";
   import { GithubIcon } from "svelte-feather-icons";
+  import { onDestroy, onMount } from "svelte";
+  import { app } from "../utils/store";
+
+  onMount(() => {
+    document.title = `Login - ${app}`;
+  });
+  onDestroy(() => {
+    document.title = app;
+  });
 </script>
 
+<svelte:head>
+  <title>
+    {`Login - ${app}`}
+  </title>
+</svelte:head>
 <div class="login">
   <div class="block">
     <h1 style="display: flex; align-items:center">

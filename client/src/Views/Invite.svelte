@@ -10,21 +10,28 @@
   } from "@firebase/firestore";
 
   import { onMount } from "svelte";
+  import { LoaderIcon } from "svelte-feather-icons";
 
   import { navigate, useParams } from "svelte-navigator";
+  import Loader from "../components/Loader.svelte";
   import { db } from "../utils/firebase";
   import socket from "../utils/socket";
-  import { user } from "../utils/store";
+  import { app, user } from "../utils/store";
 
   const params = useParams();
   let error = "";
   let room = null;
+  let loading = false;
+  let joining = false;
 
   $: roomID = $params.room;
 
   onMount(async () => {
+    document.title = `Invite - ${app}`;
+    loading = true;
     const roomRef = doc(db, "rooms", roomID);
     const roomSnap = await getDoc(roomRef);
+    loading = false;
     if (roomSnap.exists()) {
       room = roomSnap.data();
     } else {
@@ -33,6 +40,7 @@
   });
 
   const join = async () => {
+    joining = true;
     try {
       const roomRef = doc(db, "rooms", roomID);
       const batch = writeBatch(db);
@@ -70,17 +78,35 @@
       );
 
       await batch.commit();
+      joining = false;
       navigate(`/${roomID}/${room.general}`);
     } catch (e) {
       console.error(e);
     }
   };
+  const home = () => {
+    navigate("/");
+  };
 </script>
 
+<svelte:head>
+  <title>
+    {`Invite - ${app}`}
+  </title>
+</svelte:head>
 <div class="main">
   <div class="dialog content">
-    {#if room}
-      <img src={room.img} alt="Room Icon" class="pfp" />
+    {#if loading}
+      <Loader />
+    {:else if room}
+      <img
+        src={room.img ||
+          `https://avatars.dicebear.com/api/jdenticon/${room.name
+            .split(" ")[0]
+            .toLowerCase()}.svg`}
+        alt="Room Icon"
+        class="pfp"
+      />
       <p class="grey-text size14">You've been invited to join</p>
       <h2>{room.name}</h2>
       <p class="size14">
@@ -90,11 +116,18 @@
       {#if $user.rooms.includes(roomID)}
         <button disabled class="btn">Already a member</button>
       {:else}
-        <button class="btn" on:click={join}>Accept Invitation</button>
+        <button class="btn" on:click={join}>
+          {#if joining}
+            <div class="loading"><LoaderIcon /></div>
+          {:else}
+            Accept Invitation
+          {/if}</button
+        >
       {/if}
     {:else}
       <h1>Oops!</h1>
-      <h3>{error}</h3>
+      <p style="margin:20px 0">{error}</p>
+      <button class="btn" on:click={home}>Continue</button>
     {/if}
   </div>
 </div>
@@ -113,6 +146,9 @@
     padding: 20px;
     max-width: 480px;
     width: 90%;
+    min-height: 300px;
+    align-items: center;
+    justify-content: center;
   }
   .content > * {
     margin: 5px 0;
