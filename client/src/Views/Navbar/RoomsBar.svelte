@@ -1,7 +1,13 @@
 <script>
   export let rooms;
   import Room from "../../components/Room.svelte";
-  import { PlusIcon, XIcon, HomeIcon, ImageIcon } from "svelte-feather-icons";
+  import {
+    PlusIcon,
+    XIcon,
+    HomeIcon,
+    ImageIcon,
+    MenuIcon,
+  } from "svelte-feather-icons";
   import { DialogOverlay, DialogContent } from "svelte-accessible-dialog";
   import {
     collection,
@@ -13,7 +19,7 @@
     serverTimestamp,
   } from "firebase/firestore";
   import { db, storageRef } from "../../utils/firebase";
-  import { isInVC, selectedRoom, user } from "../../utils/store";
+  import { isInVC, menu, selectedRoom, user } from "../../utils/store";
   import socket from "../../utils/socket";
   import { getDownloadURL, ref, uploadBytesResumable } from "@firebase/storage";
   import finalCompressedBlob from "../../utils/compressImage";
@@ -202,6 +208,17 @@
 </script>
 
 <div class="rooms">
+  <div class="menu">
+    <Room
+      id=""
+      name=""
+      img={"none"}
+      icon={MenuIcon}
+      on:click={() => {
+        $menu = !$menu;
+      }}
+    />
+  </div>
   <Room
     id="me"
     name="Home"
@@ -232,7 +249,10 @@
     name="Add a room"
     img={"none"}
     icon={PlusIcon}
-    on:click={open}
+    on:click={() => {
+      open();
+      $menu = false;
+    }}
   />
   <DialogOverlay {isOpen} onDismiss={close}>
     <DialogContent

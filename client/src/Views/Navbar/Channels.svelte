@@ -3,6 +3,7 @@
   import {
     dmList,
     isInVC,
+    menu,
     selectedChannel,
     selectedDM,
     selectedRoom,
@@ -143,6 +144,7 @@
         on:click={() => {
           $selectedDM = null;
           $isInVC = false;
+          $menu = false;
           changeURLChannel(channel);
         }}
       />
@@ -193,6 +195,7 @@
           name={channel.name}
           pfp={channel.pfp}
           on:click={() => {
+            $menu = false;
             $selectedChannel = {};
             $selectedDM = channel;
             socket.emit("joinDM", { room: channel.id }, (error) => {

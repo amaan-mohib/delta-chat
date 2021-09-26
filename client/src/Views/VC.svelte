@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from "svelte";
   import Video from "../components/Video.svelte";
   import { socketVC as socket } from "../utils/socket";
-  import { isInVC, selectedVC, user, usersInVC } from "../utils/store";
+  import { isInVC, selectedVC, status, user, usersInVC } from "../utils/store";
   import Peer from "simple-peer/simplepeer.min.js";
   import VideoRemote from "../components/VideoRemote.svelte";
   import {
@@ -93,12 +93,12 @@
 
   $: if (volumeCallback !== null && volumeInterval === null)
     volumeInterval = setInterval(volumeCallback, 100);
-
+  $status = "Connecting...";
   onMount(() => {
     console.log("rendered again");
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
     audioContext = new AudioContext();
-
+    $status = "Preparing devices";
     if ($selectedVC) {
       navigator.mediaDevices
         .getUserMedia({
@@ -130,9 +130,8 @@
           };
 
           socket.emit("joinVC", { channelID: $selectedVC.id, user: $user });
-          // socket.on("allUsers", (data) => {
-          //   $usersInVC = data;
-          // });
+
+          $status = "Connected";
           socket.on("allUsersInVC", (allUsers) => {
             if (allUsers.length > 0) {
               console.log(allUsers);
@@ -195,10 +194,12 @@
         clearInterval(volumeInterval);
         volumeInterval = null;
       }
+      $status = "Leaving...";
       streamState.getTracks().forEach((t) => t.stop());
       peerRef = [];
       socket.off();
       socket.disconnect();
+      $status = "";
     }
   });
 </script>
@@ -370,5 +371,12 @@
     width: 100px;
     height: 100px;
     background-size: contain;
+  }
+  @media only screen and (max-width: 865px) {
+    .vc {
+      width: 100vw;
+      visibility: visible;
+      left: 0;
+    }
   }
 </style>

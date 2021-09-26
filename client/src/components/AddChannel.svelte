@@ -7,12 +7,13 @@
   import clickOutside from "../utils/clickOutside";
   import { collection, doc, setDoc } from "@firebase/firestore";
   import { db } from "../utils/firebase";
-  import { selectedRoom } from "../utils/store";
+  import { menu, selectedRoom } from "../utils/store";
 
   let isOpen = false;
   let isEmoji = false;
   const open = () => {
     isOpen = true;
+    $menu = false;
   };
   const close = () => {
     isOpen = false;

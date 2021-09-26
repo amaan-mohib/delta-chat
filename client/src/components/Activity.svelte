@@ -109,4 +109,9 @@
   .offline {
     filter: brightness(50%);
   }
+  @media only screen and (max-width: 865px) {
+    .side-bar {
+      display: none;
+    }
+  }
 </style>

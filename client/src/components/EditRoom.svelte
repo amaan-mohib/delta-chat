@@ -13,7 +13,7 @@
   import clickOutside from "../utils/clickOutside";
   import finalCompressedBlob from "../utils/compressImage";
   import { db, storageRef } from "../utils/firebase";
-  import { appName, selectedRoom } from "../utils/store";
+  import { appName, menu, selectedRoom } from "../utils/store";
 
   let name = $selectedRoom.name;
   let pfp = $selectedRoom.img;
@@ -23,6 +23,7 @@
   let isOpen = false;
   const open = () => {
     isOpen = true;
+    $menu = false;
   };
   const close = () => {
     isOpen = false;
