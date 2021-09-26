@@ -35,7 +35,7 @@
 
   function changeChannel() {
     if ($user && $selectedRoom.id) {
-      // console.log($selectedRoom);
+      // // console.log($selectedRoom);
       if ($selectedRoom.id === "me") {
         channels = [
           {
@@ -60,7 +60,7 @@
               pfp: doc.data().photoURL,
             };
           });
-          console.log(allDms);
+          // // console.log(allDms);
           dms = allDms;
           $dmList = allDms;
         });
@@ -70,7 +70,7 @@
           let allChannels = querySnapshot.docs.map((doc) => doc.data());
           channels = allChannels.filter((room) => room.type === "text");
           vcs = allChannels.filter((channel) => !channels.includes(channel));
-          // console.log(channels, vcs);
+          // // console.log(channels, vcs);
           if (channelID === "friends") {
             if (channels.length > 0) $selectedChannel = channels[0];
           } else {
@@ -78,7 +78,7 @@
             $selectedChannel =
               filteredRoom.length > 0 ? filteredRoom[0] : channels[0];
           }
-          // console.log(channels, $selectedChannel);
+          // // console.log(channels, $selectedChannel);
           if (channels.length > 0) {
             document.title = `${$selectedChannel.name} - ${app}`;
             window.history.replaceState(
@@ -173,7 +173,7 @@
               $usersInVC[channel.id] &&
               $usersInVC[channel.id].some((u) => u.user.uid === $user.uid)
             ) {
-              console.log("in another client");
+              // console.log("in another client");
             } else {
               let temp = $selectedVC;
               if (temp && temp.id !== channel.id) {

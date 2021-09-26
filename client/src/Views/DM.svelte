@@ -38,7 +38,7 @@
 
   onMount(() => {
     socket.on("message", (data) => {
-      console.log(data);
+      // console.log(data);
       messages = [data, ...messages];
     });
   });

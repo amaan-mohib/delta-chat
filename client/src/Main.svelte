@@ -42,7 +42,7 @@
 
   onMount(() => {
     unsub = onAuthStateChanged(auth, async (res) => {
-      // console.log(res);
+      // // console.log(res);
       if (res) {
         if (socket.disconnected) {
           socket.connect();

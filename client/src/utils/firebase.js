@@ -29,22 +29,24 @@ ghProvider.setCustomParameters({
 export const login = () => {
   signInWithPopup(auth, provider)
     .then((res) => {
-      console.log(res);
+      // console.log(res);
       // user.set(res.user);
+      console.debug("signed in", res);
     })
     .catch((err) => console.error(err));
 };
 export const ghLogin = () => {
   signInWithPopup(auth, ghProvider)
     .then((res) => {
-      console.log(res);
+      // console.log(res);
+      console.debug("signed in", res);
     })
     .catch((err) => console.error(err));
 };
 export const logout = () => {
   signOut(auth)
     .then(() => {
-      console.log("user signed out");
+      // console.log("user signed out");
     })
     .catch((err) => console.error(err));
 };

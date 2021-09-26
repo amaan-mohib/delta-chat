@@ -97,7 +97,6 @@
     volumeInterval = setInterval(volumeCallback, 100);
   $status = "Connecting...";
   onMount(() => {
-    console.log("rendered again");
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
     audioContext = new AudioContext();
     $status = "Preparing devices";
@@ -136,9 +135,9 @@
           $status = "Connected";
           socket.on("allUsersInVC", (allUsers) => {
             if (allUsers.length > 0) {
-              console.log(allUsers);
+              // console.log(allUsers);
               allUsers.forEach(({ sid, user: userR }) => {
-                console.log(sid, userR);
+                // console.log(sid, userR);
                 const peersL = [];
                 const peer = createPeer(sid, socket.id, stream, userR);
                 peersL.push({
@@ -151,7 +150,7 @@
           });
           socket.on("user joined", (payload) => {
             const peer = addPeer(payload.signal, payload.callerID, stream);
-            console.log(payload);
+            // console.log(payload);
             peerRef.push({
               peerID: payload.callerID,
               peer,

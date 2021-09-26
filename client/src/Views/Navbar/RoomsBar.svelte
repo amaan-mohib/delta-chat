@@ -24,7 +24,6 @@
   import socket from "../../utils/socket";
   import { getDownloadURL, ref, uploadBytesResumable } from "@firebase/storage";
   import finalCompressedBlob from "../../utils/compressImage";
-  import Loader from "../../components/Loader.svelte";
 
   let isOpen = false;
   const open = () => {
@@ -75,7 +74,7 @@
           "state_changed",
           (ss) => {
             const progress = (ss.bytesTransferred / ss.totalBytes) * 100;
-            console.log("Upload is " + progress + "% done");
+            // console.log("Upload is " + progress + "% done");
           },
           (error) => {
             console.error(error);
@@ -83,7 +82,7 @@
           },
           () => {
             getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-              console.log(url);
+              // console.log(url);
               roomImg = url;
               resolve();
             });
@@ -107,7 +106,7 @@
         img: roomImg,
         participants: arrayUnion($user.uid),
       });
-      console.log("added", docRef.id);
+      // console.log("added", docRef.id);
 
       const userRef = doc(db, "users", $user.uid);
       batch.update(userRef, {

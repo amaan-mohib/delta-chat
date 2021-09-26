@@ -57,7 +57,7 @@
       friends = snap.docs.map((doc) => doc.data());
       online = friends.filter((user) => $onlineUsers.includes(user.uid));
       offline = friends.filter((user) => !$onlineUsers.includes(user.uid));
-      console.log(online, offline);
+      // // console.log(online, offline);
     } catch (e) {
       console.error(e);
     }
@@ -143,7 +143,7 @@
       $onlineUsers = data.onlineUsers;
       online = friends.filter((user) => $onlineUsers.includes(user.uid));
       offline = friends.filter((user) => !$onlineUsers.includes(user.uid));
-      console.log($onlineUsers, online);
+      // // console.log($onlineUsers, online);
     });
   });
   onDestroy(() => {

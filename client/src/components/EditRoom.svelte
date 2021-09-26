@@ -64,7 +64,7 @@
           "state_changed",
           (ss) => {
             const progress = (ss.bytesTransferred / ss.totalBytes) * 100;
-            console.log("Upload is " + progress + "% done");
+            // console.log("Upload is " + progress + "% done");
           },
           (error) => {
             console.error(error);
@@ -72,7 +72,7 @@
           },
           () => {
             getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-              console.log(url);
+              // console.log(url);
               pfp = url;
               resolve();
             });

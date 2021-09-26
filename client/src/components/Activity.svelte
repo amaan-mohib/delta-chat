@@ -21,7 +21,7 @@
       );
       unsub = onSnapshot(q, (querySnapshot) => {
         allUsers = querySnapshot.docs.map((doc) => doc.data());
-        console.log(allUsers);
+        // // console.log(allUsers);
         online = allUsers.filter((user) => $onlineUsers.includes(user.uid));
         offline = allUsers.filter((user) => !$onlineUsers.includes(user.uid));
       });
@@ -33,7 +33,7 @@
       $onlineUsers = data.onlineUsers;
       online = allUsers.filter((user) => $onlineUsers.includes(user.uid));
       offline = allUsers.filter((user) => !$onlineUsers.includes(user.uid));
-      console.log($onlineUsers);
+      // // console.log($onlineUsers);
     });
   });
 

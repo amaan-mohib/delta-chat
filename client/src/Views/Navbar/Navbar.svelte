@@ -22,18 +22,18 @@
     );
     unsub = onSnapshot(q, (querySnapshot) => {
       rooms = querySnapshot.docs.map((doc) => doc.data());
-      // console.log(roomID);
+      // // console.log(roomID);
       if (rooms.length > 0) {
         if (roomID !== "me") {
           let filteredRoom = rooms.filter((room) => room.id === roomID);
           $selectedRoom = filteredRoom.length > 0 ? filteredRoom[0] : rooms[0];
-          console.log($selectedRoom);
+          // // console.log($selectedRoom);
           socket.emit("joinRoom", { room: $selectedRoom.id }, (error) => {
             if (error) console.error(error);
           });
         }
       }
-      console.log(rooms);
+      // // console.log(rooms);
     });
   });
   onDestroy(() => {
