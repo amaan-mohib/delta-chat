@@ -15,5 +15,8 @@ export const selectedDM = writable(null);
 export const dmList = writable([]);
 export const menu = writable(false);
 export const status = writable("Connecting...");
-export const appName = "http://localhost:5000";
+export const appName =
+  process.env.NODE_ENV === "production"
+    ? "https://deltachat-app.web.app"
+    : "http://localhost:5000";
 export const app = "δ Chat";

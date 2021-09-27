@@ -19,11 +19,12 @@
     getDoc,
     serverTimestamp,
   } from "firebase/firestore";
-  import { db, storageRef } from "../../utils/firebase";
+  import { analytics, db, storageRef } from "../../utils/firebase";
   import { appName, isInVC, menu, selectedRoom, user } from "../../utils/store";
   import socket from "../../utils/socket";
   import { getDownloadURL, ref, uploadBytesResumable } from "@firebase/storage";
   import finalCompressedBlob from "../../utils/compressImage";
+  import { logEvent } from "@firebase/analytics";
 
   let isOpen = false;
   const open = () => {
@@ -234,8 +235,8 @@
   <Room
     id="me"
     name="Home"
-    img={"none"}
-    icon={HomeIcon}
+    icon={false}
+    img={"/images/play_store_512.png"}
     on:click={() => {
       $isInVC = false;
       $selectedRoom = { id: "me", name: "Home" };
@@ -253,6 +254,7 @@
         socket.emit("joinRoom", { room: room.id }, (error) => {
           if (error) console.error(error);
         });
+        logEvent(analytics, `join_group_${room.id}`);
       }}
     />
   {/each}

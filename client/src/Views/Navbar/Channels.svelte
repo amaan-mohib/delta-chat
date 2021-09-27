@@ -173,7 +173,7 @@
               $usersInVC[channel.id] &&
               $usersInVC[channel.id].some((u) => u.user.uid === $user.uid)
             ) {
-              // console.log("in another client");
+              console.log("in another client");
             } else {
               let temp = $selectedVC;
               if (temp && temp.id !== channel.id) {

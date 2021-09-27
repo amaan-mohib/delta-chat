@@ -14,7 +14,9 @@ import {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+//Analytics
+export const analytics = getAnalytics(app);
 
 //Auth
 export const auth = getAuth();
@@ -31,6 +33,7 @@ export const login = () => {
     .then((res) => {
       // console.log(res);
       // user.set(res.user);
+      logEvent(analytics, "google_signin");
       console.debug("signed in", res);
     })
     .catch((err) => console.error(err));
@@ -39,6 +42,7 @@ export const ghLogin = () => {
   signInWithPopup(auth, ghProvider)
     .then((res) => {
       // console.log(res);
+      logEvent(analytics, "github_signin");
       console.debug("signed in", res);
     })
     .catch((err) => console.error(err));

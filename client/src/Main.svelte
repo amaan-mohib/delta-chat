@@ -1,13 +1,8 @@
 <script>
   import { onDestroy, onMount } from "svelte";
   import { onAuthStateChanged } from "firebase/auth";
-  import {
-    Route,
-    useNavigate,
-    useLocation,
-    useResolve,
-  } from "svelte-navigator";
-  import { auth, db } from "./utils/firebase";
+  import { Route, useNavigate, useLocation } from "svelte-navigator";
+  import { analytics, auth, db } from "./utils/firebase";
   import { user } from "./utils/store";
   import Login from "./Views/Login.svelte";
   import Home from "./Views/Home.svelte";
@@ -19,6 +14,7 @@
   import Invite from "./Views/Invite.svelte";
   import delta from "./assets/images/delta.svg";
   import NotFound from "./Views/NotFound.svelte";
+  import { logEvent } from "@firebase/analytics";
 
   let unsub;
   let loading = true;
@@ -44,6 +40,7 @@
     unsub = onAuthStateChanged(auth, async (res) => {
       // // console.log(res);
       if (res) {
+        logEvent(analytics, "login");
         if (socket.disconnected) {
           socket.connect();
         }

@@ -23,27 +23,15 @@
     <link rel="stylesheet" href="/build/bundle.css" />
     <link rel="manifest" href="/manifest.json" />
 
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@pwabuilder/pwainstall"
-    ></script>
-
-    <script defer src="/build/bundle.js"></script>
+    <!-- <script defer src="/build/bundle.js"></script> -->
   </head>
 
   <body>
-    <noscript>
-      <div>Oops! Javascript required here! Allow it and try again!</div>
-    </noscript>
-
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/service-worker.js").then((reg) => {
-            console.log("Service worker registered.");
-          });
-        });
-      }
-    </script>
+    <main>
+      <h1>
+        Oops, you appear to be offline, this app requires an internet
+        connection.
+      </h1>
+    </main>
   </body>
 </html>
