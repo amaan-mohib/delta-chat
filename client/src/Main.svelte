@@ -9,7 +9,7 @@
   import PrivateRoute from "./Views/PrivateRoute/PrivateRoute.svelte";
   import Redirect from "./Redirect.svelte";
   import Loader from "./components/Loader.svelte";
-  import socket from "./utils/socket";
+  import socket, { ENDPOINT } from "./utils/socket";
   import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
   import Invite from "./Views/Invite.svelte";
   import delta from "./assets/images/delta.svg";
@@ -25,7 +25,7 @@
 
   const getServer = () => {
     return new Promise((resolve, reject) => {
-      fetch("http://localhost:3000/")
+      fetch(ENDPOINT + "/")
         .then((res) => {
           if (res.status === 200) resolve("ok");
         })

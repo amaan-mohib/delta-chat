@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, logEvent } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getStorage, ref } from "firebase/storage";
 import firebaseConfig from "../config/firebase-config";

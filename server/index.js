@@ -28,6 +28,7 @@ io.on("connect", (socket) => {
     io.to("app").emit("onlineUsers", {
       onlineUsers: online,
     });
+    io.to("app").emit("usersVC", usersVC);
     callback();
   });
 
