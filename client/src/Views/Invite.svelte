@@ -17,6 +17,7 @@
   import { db } from "../utils/firebase";
   import socket from "../utils/socket";
   import { app, user } from "../utils/store";
+  import { AVATAR_ENDPOINT } from "../utils/avatar";
 
   const params = useParams();
   let error = "";
@@ -100,10 +101,7 @@
       <Loader />
     {:else if room}
       <img
-        src={room.img ||
-          `https://avatars.dicebear.com/api/jdenticon/${room.name
-            .split(" ")[0]
-            .toLowerCase()}.svg`}
+        src={room.img || AVATAR_ENDPOINT(room.name)}
         alt="Room Icon"
         class="pfp"
       />

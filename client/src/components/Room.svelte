@@ -1,5 +1,6 @@
 <script>
   import { selectedRoom } from "../utils/store";
+  import { AVATAR_ENDPOINT } from "../utils/avatar";
 
   export let img = "";
   export let name = "";
@@ -19,9 +20,7 @@
       class="room-icon"
       src={img
         ? img
-        : `https://avatars.dicebear.com/api/jdenticon/${name
-            .split(" ")[0]
-            .toLowerCase()}.svg`}
+        : AVATAR_ENDPOINT(name)}
       alt={name}
     />
   {/if}

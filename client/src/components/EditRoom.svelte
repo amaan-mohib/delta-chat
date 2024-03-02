@@ -14,6 +14,7 @@
   import clickOutside from "../utils/clickOutside";
   import finalCompressedBlob from "../utils/compressImage";
   import { db, storageRef } from "../utils/firebase";
+  import { AVATAR_ENDPOINT } from "../utils/avatar";
   import { appName, menu, selectedRoom } from "../utils/store";
 
   let name = $selectedRoom.name;
@@ -178,9 +179,7 @@
           pfpTemp = null;
           if (!remove) {
             remove = true;
-            pfp = `https://avatars.dicebear.com/api/jdenticon/${name
-              .split(" ")
-              .join("")}.svg`;
+            pfp = AVATAR_ENDPOINT(name);
             preview.src = pfp;
           } else {
             remove = false;

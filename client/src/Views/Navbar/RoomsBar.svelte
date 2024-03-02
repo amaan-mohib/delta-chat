@@ -285,7 +285,7 @@
         {#if !isNext}
           <h2>Create a Room</h2>
           <p class="size14 grey-text" style="margin-bottom: 20px;">
-            Or a join a Room, if you have the ID already
+            Or join a Room, if you have the ID already
           </p>
           <button
             on:click={() => {
