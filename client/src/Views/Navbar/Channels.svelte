@@ -14,7 +14,7 @@
     showDonationDialog,
   } from "../../utils/store";
   import { collection, query, onSnapshot, where } from "firebase/firestore";
-  import { db } from "../../utils/firebase";
+  import { analytics, db } from "../../utils/firebase";
   import { onDestroy, onMount } from "svelte";
   import { useParams } from "svelte-navigator";
   import ProfileBar from "../../components/ProfileBar.svelte";
@@ -22,6 +22,7 @@
   import DmChannel from "../../components/DMChannel.svelte";
   import AddChannel from "../../components/AddChannel.svelte";
   import EditRoom from "../../components/EditRoom.svelte";
+  import { logEvent } from "@firebase/analytics";
 
   let unsub;
   let dmSub;
@@ -51,7 +52,7 @@
 
         const q = query(
           collection(db, "users"),
-          where("dms", "array-contains", $user.uid)
+          where("dms", "array-contains", $user.uid),
         );
         dmSub = onSnapshot(q, (querySnapshot) => {
           let allDms = querySnapshot.docs.map((doc) => {
@@ -85,7 +86,7 @@
             window.history.replaceState(
               {},
               `${$selectedChannel.name}`,
-              `/${$selectedRoom.id}/${$selectedChannel.id}`
+              `/${$selectedRoom.id}/${$selectedChannel.id}`,
             );
           }
         });
@@ -116,7 +117,7 @@
     window.history.replaceState(
       {},
       `${$selectedChannel.name}`,
-      `/${$selectedRoom.id}/${$selectedChannel.id}`
+      `/${$selectedRoom.id}/${$selectedChannel.id}`,
     );
   };
 </script>
@@ -135,9 +136,13 @@
   <hr />
 
   <div class="donation-box">
-    <button class="donate-btn" on:click={() => {
-      $showDonationDialog = true;
-    }}>
+    <button
+      class="donate-btn"
+      on:click={() => {
+        $showDonationDialog = true;
+        logEvent(analytics, "donation-clicked");
+      }}
+    >
       ❤️ Buy us a coffee
     </button>
   </div>

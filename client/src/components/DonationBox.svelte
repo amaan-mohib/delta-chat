@@ -4,6 +4,8 @@
 
   import { DialogContent, DialogOverlay } from "svelte-accessible-dialog";
   import { XIcon } from "svelte-feather-icons";
+  import { analytics } from "../utils/firebase";
+  import { logEvent } from "@firebase/analytics";
 </script>
 
 <DialogOverlay {isOpen} onDismiss={Close}>
@@ -31,6 +33,9 @@
           href="https://buymeacoffee.com/amaan.mohib"
           target="_blank"
           class="donate-link donate-btn button"
+          on:click={() => {
+            logEvent(analytics, "donation-clicked-dialog");
+          }}
         >
           ❤️ Buy us a coffee
         </a>
