@@ -29,7 +29,7 @@
         const type = pfpTemp.type.split("/")[typeArr.length - 1];
         const uploadTask = uploadBytesResumable(
           ref(storageRef, "pfps/" + `${id}.${type}`),
-          pfpTemp
+          pfpTemp,
         );
         uploadTask.on(
           "state_changed",
@@ -47,7 +47,7 @@
               pfp = url;
               resolve();
             });
-          }
+          },
         );
       } else {
         resolve();
@@ -56,31 +56,30 @@
   };
 
   const changeProfile = async () => {
-    loading = true;
-    await uploadImage($user.uid);
-    const auth = getAuth();
-    updateProfile(auth.currentUser, {
-      displayName: name,
-      photoURL: pfp,
-    })
-      .then(async () => {
-        const userRef = doc(db, "users", $user.uid);
-        try {
-          await updateDoc(userRef, {
-            displayName: name,
-            photoURL: pfp,
-            modifiedAt: serverTimestamp(),
-          });
-        } catch (error) {
-          console.error(error);
-        }
-        $user.displayName = name;
-        $user.photoURL = pfp;
-        $user.modifiedAt = new Date().toLocaleDateString("en-IN");
-        loading = false;
-        Close();
-      })
-      .catch((e) => console.error(e));
+    try {
+      loading = true;
+      await uploadImage($user.uid);
+      const auth = getAuth();
+      await updateProfile(auth.currentUser, {
+        displayName: name,
+        photoURL: pfp,
+      });
+      const userRef = doc(db, "users", $user.uid);
+      await updateDoc(userRef, {
+        displayName: name,
+        photoURL: pfp,
+        modifiedAt: serverTimestamp(),
+      });
+
+      $user.displayName = name;
+      $user.photoURL = pfp;
+      $user.modifiedAt = Date.now();
+      loading = false;
+      Close();
+    } catch (error) {
+      loading = false;
+      console.error(error);
+    }
   };
 
   const handleUpload = async (e) => {
@@ -91,6 +90,13 @@
     preview.src = URL.createObjectURL(compressedBlob);
     URL.revokeObjectURL(preview);
     remove = false;
+  };
+
+  const formatDisplayDate = (date) => {
+    if (!date) return "NA";
+    return typeof date === "string"
+      ? date
+      : date.toDate().toLocaleDateString("en-IN");
   };
 </script>
 
@@ -134,13 +140,9 @@
         }}>{!remove ? "Remove" : "Reset"}</span
       >
       <input type="text" placeholder="Name" bind:value={name} title="Name" />
-      <i class="grey-text size12" style="text-align: left;"
-        >Last Modified: {($user.modifiedAt &&
-          $user.modifiedAt.toDate().toLocaleDateString("en-IN")) ||
-        typeof $user.createdAt === "string"
-          ? $user.createdAt
-          : $user.createdAt.toDate().toLocaleDateString("en-IN")}</i
-      >
+      <i class="grey-text size12" style="text-align: left;">
+        Last Modified: {formatDisplayDate($user.modifiedAt || $user.createdAt)}
+      </i>
       <div class="btn-bar">
         <button on:click={Close}>Cancel</button>
         <button disabled={name.trim() === ""} on:click={changeProfile}>

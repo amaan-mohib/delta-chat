@@ -1,5 +1,5 @@
 <script>
-  import { doc, updateDoc } from "@firebase/firestore";
+  import { doc, updateDoc, serverTimestamp } from "@firebase/firestore";
   import { getDownloadURL, ref, uploadBytesResumable } from "@firebase/storage";
   import { DialogContent, DialogOverlay } from "svelte-accessible-dialog";
   import {
@@ -59,7 +59,7 @@
         const type = pfpTemp.type.split("/")[typeArr.length - 1];
         const uploadTask = uploadBytesResumable(
           ref(storageRef, "rooms/" + `${id}.${type}`),
-          pfpTemp
+          pfpTemp,
         );
         uploadTask.on(
           "state_changed",
@@ -77,7 +77,7 @@
               pfp = url;
               resolve();
             });
-          }
+          },
         );
       } else {
         resolve();
@@ -85,19 +85,21 @@
     });
   };
   const editRoom = async () => {
-    loading = true;
-    await uploadImage($selectedRoom.id);
-    const docRef = doc(db, "rooms", $selectedRoom.id);
     try {
+      loading = true;
+      await uploadImage($selectedRoom.id);
+      const docRef = doc(db, "rooms", $selectedRoom.id);
       await updateDoc(docRef, {
         name,
         img: pfp,
+        updatedAt: serverTimestamp(),
       });
+      loading = false;
+      close();
     } catch (e) {
+      loading = false;
       console.error(e);
     }
-    loading = false;
-    close();
   };
 
   const handleUpload = async (e) => {

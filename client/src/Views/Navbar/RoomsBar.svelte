@@ -69,7 +69,7 @@
         const type = roomImgTemp.type.split("/")[typeArr.length - 1];
         const uploadTask = uploadBytesResumable(
           ref(storageRef, "rooms/" + `${id}.${type}`),
-          roomImgTemp
+          roomImgTemp,
         );
         uploadTask.on(
           "state_changed",
@@ -87,7 +87,7 @@
               roomImg = url;
               resolve();
             });
-          }
+          },
         );
       } else {
         resolve();
@@ -106,6 +106,7 @@
         name: roomName,
         img: roomImg,
         participants: arrayUnion($user.uid),
+        createdAt: serverTimestamp(),
       });
       // console.log("added", docRef.id);
 
@@ -176,8 +177,8 @@
               const msgRef = doc(
                 collection(
                   db,
-                  `rooms/${roomID}/channels/${snap.data().general}/messages`
-                )
+                  `rooms/${roomID}/channels/${snap.data().general}/messages`,
+                ),
               );
               await setDoc(msgRef, {
                 sender: { displayName: "admin" },
@@ -187,7 +188,7 @@
                 id: msgRef.id,
                 sentAt: serverTimestamp(),
               });
-            }
+            },
           );
 
           await batch.commit();

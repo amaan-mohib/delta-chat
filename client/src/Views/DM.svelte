@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   import { db } from "../utils/firebase";
   import socket from "../utils/socket";
@@ -18,6 +18,7 @@
 
   let messages = [];
   let message = "";
+  let sendMessageTimeout;
 
   $: $selectedDM, getMessages();
 
@@ -26,7 +27,7 @@
       if ($selectedDM.id) {
         const q = query(
           collection(db, `dms/${$selectedDM.id}/messages`),
-          orderBy("sentAt", "desc")
+          orderBy("sentAt", "desc"),
         );
         const snap = await getDocs(q);
         messages = snap.docs.map((doc) => doc.data());
@@ -42,48 +43,61 @@
       messages = [data, ...messages];
     });
   });
-  const sendMessage = async () => {
-    const pair = $selectedDM.id.split("_");
-    const puid = pair.filter((id) => id !== $user.uid)[0];
-    if (!$user.dms.includes(puid)) {
-      await updateDoc(doc(db, "users", $user.uid), {
+  const sendMessage = () => {
+    const text = message;
+    if (text.trim() === "" || sendMessageTimeout !== undefined) return;
+
+    const roomId = $selectedDM.id;
+    const currentUser = $user;
+
+    sendMessageTimeout = setTimeout(() => {
+      sendMessageTimeout = undefined;
+    }, 300);
+    sendMessageNow(text, roomId, currentUser);
+  };
+
+  const sendMessageNow = async (text, roomId, currentUser) => {
+    if (text.trim() === "") return;
+
+    const pair = roomId.split("_");
+    const puid = pair.filter((id) => id !== currentUser.uid)[0];
+    if (!currentUser.dms.includes(puid)) {
+      await updateDoc(doc(db, "users", currentUser.uid), {
         dms: arrayUnion(puid),
       });
     }
-    if (message.trim()) {
-      socket.emit(
-        "sendMessage",
-        {
-          user: $user,
-          text: message,
-          room: $selectedDM.id,
-          channel: $selectedDM.id,
-          sentAt: new Date().toLocaleDateString("en-IN"),
-        },
-        async () => {
-          let text = message;
-          message = "";
 
-          //storing in db
-          try {
-            const msgRef = doc(
-              collection(db, `dms/${$selectedDM.id}/messages`)
-            );
-            await setDoc(msgRef, {
-              sender: $user,
-              text: text,
-              room: $selectedDM.id,
-              channel: $selectedDM.id,
-              id: msgRef.id,
-              sentAt: serverTimestamp(),
-            });
-          } catch (e) {
-            console.error(e);
-          }
+    socket.emit(
+      "sendMessage",
+      {
+        user: currentUser,
+        text,
+        room: roomId,
+        channel: roomId,
+        sentAt: new Date().toLocaleDateString("en-IN"),
+      },
+      async () => {
+        if (message === text) message = "";
+
+        //storing in db
+        try {
+          const msgRef = doc(collection(db, `dms/${roomId}/messages`));
+          await setDoc(msgRef, {
+            sender: currentUser,
+            text: text,
+            room: roomId,
+            channel: roomId,
+            id: msgRef.id,
+            sentAt: serverTimestamp(),
+          });
+        } catch (e) {
+          console.error(e);
         }
-      );
-    }
+      },
+    );
   };
+
+  onDestroy(() => clearTimeout(sendMessageTimeout));
 
   const onKeyDown = (e) => {
     const { key } = e;
@@ -104,29 +118,29 @@
     </header>
     <div class="chat-main">
       <div class="messages">
-        {#each messages as message}
-          {#if message.room === $selectedDM.id && message.channel === $selectedDM.id}
+        {#each messages as msg}
+          {#if msg.room === $selectedDM.id && msg.channel === $selectedDM.id && msg.text !== ""}
             <div
-              class="message {message.sender.uid === $user.uid
+              class="message {msg.sender.uid === $user.uid
                 ? 'right-align'
-                : ''} {message.sender.displayName === 'admin' ? 'admin' : ''}"
+                : ''} {msg.sender.displayName === 'admin' ? 'admin' : ''}"
             >
-              {#if message.sender.uid !== $user.uid}
+              {#if msg.sender.uid !== $user.uid}
                 <img
                   class="pfp"
-                  src={message.sender.photoURL}
-                  alt={message.sender.displayName}
+                  src={msg.sender.photoURL}
+                  alt={msg.sender.displayName}
                 />
               {/if}
               <div>
-                {#if message.sender.uid !== $user.uid}
-                  <p class="sender-name">{message.sender.displayName}</p>
+                {#if msg.sender.uid !== $user.uid}
+                  <p class="sender-name">{msg.sender.displayName}</p>
                 {/if}
-                <p class="message-text">{message.text}</p>
+                <p class="message-text">{msg.text}</p>
                 <p class="message-sentat">
-                  {typeof message.sentAt === "string"
-                    ? message.sentAt
-                    : message.sentAt.toDate().toLocaleDateString("en-IN")}
+                  {typeof msg.sentAt === "string"
+                    ? msg.sentAt
+                    : msg.sentAt.toDate().toLocaleDateString("en-IN")}
                 </p>
               </div>
             </div>
@@ -135,6 +149,7 @@
       </div>
       <div class="send">
         <input
+          autofocus
           type="text"
           bind:value={message}
           on:keydown={onKeyDown}

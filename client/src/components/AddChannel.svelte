@@ -5,7 +5,12 @@
   import emoji from "../assets/emoji";
   import EmojiPicker from "./EmojiPicker.svelte";
   import clickOutside from "../utils/clickOutside";
-  import { collection, doc, setDoc } from "@firebase/firestore";
+  import {
+    collection,
+    doc,
+    setDoc,
+    serverTimestamp,
+  } from "@firebase/firestore";
   import { db } from "../utils/firebase";
   import { menu, selectedRoom } from "../utils/store";
 
@@ -32,7 +37,7 @@
   const createChannel = async () => {
     loading = true;
     const channelRef = doc(
-      collection(db, "rooms", $selectedRoom.id, "channels")
+      collection(db, "rooms", $selectedRoom.id, "channels"),
     );
     try {
       await setDoc(channelRef, {
@@ -41,6 +46,7 @@
         typeIcon,
         type: type.toLowerCase(),
         category: `${type.toLowerCase()} channels`,
+        createdAt: serverTimestamp(),
       });
     } catch (e) {
       console.error(e);
