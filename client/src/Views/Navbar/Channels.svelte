@@ -11,6 +11,7 @@
     user,
     usersInVC,
     app,
+    showDonationDialog,
   } from "../../utils/store";
   import { collection, query, onSnapshot, where } from "firebase/firestore";
   import { db } from "../../utils/firebase";
@@ -132,6 +133,15 @@
   </div>
 
   <hr />
+
+  <div class="donation-box">
+    <button class="donate-btn" on:click={() => {
+      $showDonationDialog = true;
+    }}>
+      ❤️ Buy us a coffee
+    </button>
+  </div>
+
   <div class="channels">
     {#if $selectedRoom.id !== "me"}
       <div
@@ -244,5 +254,10 @@
   .category {
     font-size: 14px;
     margin: 5px 0;
+  }
+
+  .donation-box {
+    padding: 10px;
+    padding-bottom: 0;
   }
 </style>

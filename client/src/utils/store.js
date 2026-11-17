@@ -20,3 +20,4 @@ export const appName =
     ? "https://deltachat-app.web.app"
     : "http://localhost:5000";
 export const app = "δ Chat";
+export const showDonationDialog = writable(false);

@@ -1,24 +1,79 @@
 <script>
   import Channels from "./Channels.svelte";
   import RoomsBar from "./RoomsBar.svelte";
-  import { collection, query, where, onSnapshot } from "firebase/firestore";
+  import {
+    collection,
+    query,
+    where,
+    onSnapshot,
+    doc,
+    updateDoc,
+    serverTimestamp,
+  } from "firebase/firestore";
   import { onDestroy, onMount } from "svelte";
   import { db } from "../../utils/firebase";
-  import { selectedRoom, user, menu, selectedVC } from "../../utils/store";
+  import {
+    selectedRoom,
+    user,
+    menu,
+    selectedVC,
+    showDonationDialog,
+  } from "../../utils/store";
   import { useParams } from "svelte-navigator";
   import socket from "../../utils/socket";
   import { MenuIcon } from "svelte-feather-icons";
+  import DonationBox from "../../components/DonationBox.svelte";
 
   let unsub;
   let rooms = [];
   const params = useParams();
 
+  const close = () => {
+    $showDonationDialog = false;
+  };
+
   $: roomID = $params.room;
 
-  onMount(() => {
+  onMount(async () => {
+    if (!$user) return;
+
+    try {
+      const now = Date.now();
+      const createdAt =
+        typeof $user.createdAt?.toDate === "function"
+          ? $user.createdAt.toDate()
+          : new Date($user.createdAt);
+      const lastShownValue = $user.donationDialogLastShownAt;
+      const lastShownAt = !lastShownValue
+        ? NaN
+        : typeof lastShownValue.toDate === "function"
+          ? lastShownValue.toDate().getTime()
+          : new Date(lastShownValue).getTime();
+      const hasLastShownAt = Number.isFinite(lastShownAt);
+      const shouldShowDialog = hasLastShownAt
+        ? now - lastShownAt >= 30 * 86400 * 1000
+        : now - createdAt.getTime() >= 86400 * 1000;
+      const shouldSetLastShownAt = shouldShowDialog || !hasLastShownAt;
+
+      if (shouldSetLastShownAt) {
+        const userRef = doc(db, "users", $user.uid);
+        try {
+          await updateDoc(userRef, {
+            donationDialogLastShownAt: serverTimestamp(),
+          });
+        } catch (error) {
+          console.error(error);
+        }
+        $user.donationDialogLastShownAt = new Date(now);
+      }
+      $showDonationDialog = shouldShowDialog;
+    } catch (error) {
+      console.error(error);
+    }
+
     const q = query(
       collection(db, "rooms"),
-      where("participants", "array-contains", $user.uid)
+      where("participants", "array-contains", $user.uid),
     );
     unsub = onSnapshot(q, (querySnapshot) => {
       rooms = querySnapshot.docs.map((doc) => doc.data());
@@ -53,6 +108,7 @@
 <div class="side-nav {$menu ? 'side-nav-active' : ''}">
   <RoomsBar {rooms} />
   <Channels />
+  <DonationBox Close={close} isOpen={$showDonationDialog} />
   <div
     class="with-menu"
     on:click={() => {
